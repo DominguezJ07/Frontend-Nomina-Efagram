@@ -1,0 +1,110 @@
+@import "./variables.css";
+
+.auth-layout{
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--bg);
+}
+
+.auth-left{
+  background: #18212b; /* azul oscuro tipo mockup */
+  color: white;
+  padding: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-right{
+  background: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.auth-info{
+  max-width: 520px;
+}
+
+.auth-logo{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 44px;
+}
+
+.auth-logo .mark{
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.12);
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+}
+
+.auth-logo h3{
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: .4px;
+  opacity: .95;
+}
+
+.auth-info h1{
+  margin: 0 0 18px 0;
+  font-size: 40px;
+  line-height: 1.1;
+  letter-spacing: -0.6px;
+}
+
+.auth-info p{
+  margin: 0;
+  color: rgba(255,255,255,0.72);
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 420px;
+}
+
+.auth-dots{
+  display: flex;
+  gap: 10px;
+  margin-top: 42px;
+}
+
+.auth-dots span{
+  width: 26px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.18);
+}
+
+.auth-dots span.active{
+  background: var(--brand);
+}
+
+/* tarjeta del formulario */
+.auth-card{
+  width: 380px;
+}
+
+.auth-card h2{
+  margin: 0 0 8px 0;
+  font-size: 24px;
+}
+
+.auth-card .sub{
+  margin: 0 0 26px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* responsive */
+@media (max-width: 920px){
+  .auth-layout{ grid-template-columns: 1fr; }
+  .auth-left{ display: none; }
+  .auth-card{ width: 100%; max-width: 420px; }
+}
+
+

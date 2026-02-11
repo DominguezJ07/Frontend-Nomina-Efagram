@@ -1,0 +1,23 @@
+@import "../../assets/styles/variables.css";
+
+.ui-field{ display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.ui-label{ font-size: 13px; color: #0f172a; }
+.ui-input{
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  outline: none;
+  font-size: 14px;
+}
+.ui-input:focus{
+  border-color: rgba(22,163,74,.55);
+  box-shadow: 0 0 0 3px rgba(22,163,74,.15);
+}
+.ui-input--error{
+  border-color: #ef4444;
+}
+.ui-error{
+  font-size: 12px;
+  color: #ef4444;
+}
