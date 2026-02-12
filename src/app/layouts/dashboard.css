@@ -1,0 +1,38 @@
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f4f6f9; /* fondo gris claro */
+}
+.sidebar {
+  width: 260px;
+  position: fixed;
+  height: 100vh;
+  left: 0;
+  top: 0;
+}
+
+.dashboard-main {
+  margin-left: 260px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f4f6f9; /* IMPORTANTE */
+}
+
+
+.dashboard-header {
+  height: 70px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dashboard-content {
+  padding: 32px;
+  flex: 1;
+  overflow-y: auto;
+}
