@@ -19,6 +19,10 @@ import "./sidebar.css";
 export default function Sidebar() {
     const [openTerritorial, setOpenTerritorial] = useState(false);
     const [openProyectos, setOpenProyectos] = useState(false);
+    const [openActividades, setOpenActividades] = useState(false);
+    const [openEjecucion, setOpenEjecucion] = useState(false);
+    const [openReportes, setOpenReportes] = useState(false);
+    const [openPersonal, setOpenPersonal] = useState(false);
 
     const navigate = useNavigate();
 
@@ -42,18 +46,36 @@ export default function Sidebar() {
 
                 <div className="menu-title">General</div>
 
-                <div className="menu-item active">
+                <div 
+                    className="menu-item active"
+                    onClick={() => navigate("/")}
+                >
                     <LayoutDashboard size={18} />
                     <span>Dashboard</span>
                 </div>
 
                 <div className="menu-title">Módulos</div>
 
-                <div className="menu-item">
+                <div 
+                    className="menu-item"
+                    onClick={() => setOpenReportes(!openReportes)}
+                >
                     <BarChart3 size={18} />
                     <span>Reportes</span>
-                    <ChevronDown size={16} className="arrow" />
+                    <ChevronDown 
+                        size={16} 
+                        className={`arrow ${openReportes ? "rotate" : ""}`}
+                    />
                 </div>
+
+                {openReportes && (
+                    <div className="submenu">
+                        <div className="submenu-item">
+                            <BarChart3 size={16} />
+                            Reporte General
+                        </div>
+                    </div>
+                )}
 
                 <div
                     className="menu-item"
@@ -94,11 +116,26 @@ export default function Sidebar() {
                     </div>
                 )}
 
-                <div className="menu-item">
+                <div 
+                    className="menu-item"
+                    onClick={() => setOpenEjecucion(!openEjecucion)}
+                >
                     <Play size={18} />
                     <span>Ejecución</span>
-                    <ChevronDown size={16} className="arrow" />
+                    <ChevronDown 
+                        size={16} 
+                        className={`arrow ${openEjecucion ? "rotate" : ""}`}
+                    />
                 </div>
+
+                {openEjecucion && (
+                    <div className="submenu">
+                        <div className="submenu-item">
+                            <Play size={16} />
+                            Planificación
+                        </div>
+                    </div>
+                )}
 
                 <div
                     className="menu-item"
@@ -124,7 +161,7 @@ export default function Sidebar() {
 
                         <div
                             className="submenu-item"
-                            onClick={() => navigate("/proyectos/clientes")}
+                            onClick={() => navigate("/clientes")}
                         >
                             <Users size={16} />
                             Clientes
@@ -132,15 +169,15 @@ export default function Sidebar() {
 
                         <div
                             className="submenu-item"
-                            onClick={() => navigate("/proyectos/catalogo")}
+                            onClick={() => navigate("/catalogo-actividades")}
                         >
                             <CheckSquare size={16} />
-                            Catalogo Actividades
+                            Catálogo Actividades
                         </div>
 
                         <div
                             className="submenu-item"
-                            onClick={() => navigate("/proyectos/precios")}
+                            onClick={() => navigate("/precios")}
                         >
                             <BarChart3 size={16} />
                             Precios
@@ -148,17 +185,47 @@ export default function Sidebar() {
                     </div>
                 )}
 
-                <div className="menu-item">
+                <div 
+                    className="menu-item"
+                    onClick={() => setOpenPersonal(!openPersonal)}
+                >
                     <Users size={18} />
                     <span>Personal / Nómina</span>
-                    <ChevronDown size={16} className="arrow" />
+                    <ChevronDown 
+                        size={16} 
+                        className={`arrow ${openPersonal ? "rotate" : ""}`}
+                    />
                 </div>
 
-                <div className="menu-item">
+                {openPersonal && (
+                    <div className="submenu">
+                        <div className="submenu-item">
+                            <Users size={16} />
+                            Empleados
+                        </div>
+                    </div>
+                )}
+
+                <div 
+                    className="menu-item"
+                    onClick={() => setOpenActividades(!openActividades)}
+                >
                     <CheckSquare size={18} />
                     <span>Actividades</span>
-                    <ChevronDown size={16} className="arrow" />
+                    <ChevronDown 
+                        size={16} 
+                        className={`arrow ${openActividades ? "rotate" : ""}`}
+                    />
                 </div>
+
+                {openActividades && (
+                    <div className="submenu">
+                        <div className="submenu-item">
+                            <CheckSquare size={16} />
+                            Gestión de Actividades
+                        </div>
+                    </div>
+                )}
 
             </div>
 

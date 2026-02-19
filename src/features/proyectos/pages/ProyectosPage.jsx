@@ -5,24 +5,44 @@ import {
 } from "../services/proyectosService";
 import "../../../assets/styles/proyectos.css";
 import ProyectoModal from "../components/ProyectoModal";
+import DashboardLayout from "../../../app/layouts/DashboardLayout";
+import { Eye, Pencil, Trash2, Folder } from "lucide-react";
 
+// ── Helpers ──────────────────────────────────────────────
+const fmtFecha = (iso) =>
+  iso ? new Date(iso).toISOString().slice(0, 10) : "—";
+
+const fmtMonto = (n) =>
+  n != null ? "$ " + Number(n).toLocaleString("es-CO") : null;
+
+const ESTADO_LABEL = {
+  ACTIVO: "Activo",
+  PLANEADO: "Planeado",
+  FINALIZADO: "Finalizado",
+  SUSPENDIDO: "Suspendido",
+};
+
+const INTERVENCION_LABEL = {
+  establecimiento: "Establecimiento",
+  mantenimiento: "Mantenimiento",
+  no_programadas: "No programadas",
+};
+
+// ── Componente principal ──────────────────────────────────
 const ProyectosPage = () => {
   const [proyectos, setProyectos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [busqueda, setBusqueda] = useState("");
 
-  // =========================================
-  // CARGAR PROYECTOS
-  // =========================================
+  // ── Cargar proyectos ──
   const cargarProyectos = async () => {
     try {
       setLoading(true);
       setError(null);
-
       const response = await getProyectos();
-
       if (response?.data?.success) {
         setProyectos(response.data.data);
       } else {
@@ -36,128 +56,250 @@ const ProyectosPage = () => {
     }
   };
 
-  // =========================================
-  // ELIMINAR PROYECTO
-  // =========================================
+  // ── Eliminar proyecto ──
   const handleDelete = async (id) => {
-    const confirmacion = window.confirm(
-      "¿Seguro que deseas eliminar este proyecto?"
-    );
-
-    if (!confirmacion) return;
-
+    if (!window.confirm("¿Seguro que deseas eliminar este proyecto?")) return;
     try {
       setDeletingId(id);
-
       await deleteProyecto(id);
-
-      // Recargar desde backend (más seguro que filtrar local)
       await cargarProyectos();
     } catch (err) {
       console.error("Error eliminando proyecto:", err);
-
       alert(
         err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        "No se pudo eliminar el proyecto"
+          err?.response?.data?.error ||
+          "No se pudo eliminar el proyecto"
       );
     } finally {
       setDeletingId(null);
     }
   };
 
-  // =========================================
-  // EFECTO INICIAL
-  // =========================================
   useEffect(() => {
     cargarProyectos();
   }, []);
 
-  // =========================================
-  // RENDER
-  // =========================================
+  // ── Stats derivadas ──
+  const activos = proyectos.filter(
+    (p) => p.estado?.toUpperCase() === "ACTIVO"
+  ).length;
+
+  const totalLotes = proyectos.reduce(
+    (acc, p) => acc + (p.lotes?.length ?? p.cantidad_lotes ?? 0),
+    0
+  );
+
+  const avancePromedio =
+    proyectos.length > 0
+      ? Math.round(
+          proyectos.reduce((acc, p) => acc + (p.avance ?? 0), 0) /
+            proyectos.length
+        )
+      : 0;
+
+  // ── Filtro búsqueda ──
+  const proyectosFiltrados = proyectos.filter((p) => {
+    const q = busqueda.toLowerCase();
+    return (
+      p.nombre?.toLowerCase().includes(q) ||
+      p.cliente?.nombre?.toLowerCase().includes(q) ||
+      p.codigo?.toLowerCase().includes(q)
+    );
+  });
+
   return (
-    <div className="proyectos-container">
-      <div className="header-proyectos">
-        <h2>Proyectos</h2>
+    <DashboardLayout>
+      <div className="proyectos-container">
 
-        <button
-          className="btn-crear"
-          onClick={() => setOpenModal(true)}
-        >
-          + Nuevo Proyecto
-        </button>
-      </div>
+        {/* ── STATS ── */}
+        <div className="proy-stats-row">
+          <div className="proy-stat-card">
+            <div className="proy-stat-icon proy-stat-icon--green">
+              <Folder size={22} />
+            </div>
+            <div>
+              <p className="proy-stat-label">Proyectos Activos</p>
+              <p className="proy-stat-value">{activos}</p>
+            </div>
+          </div>
 
-      {loading && <p>Cargando proyectos...</p>}
+          <div className="proy-stat-card">
+            <div className="proy-stat-icon proy-stat-icon--blue">📍</div>
+            <div>
+              <p className="proy-stat-label">Total Lotes</p>
+              <p className="proy-stat-value">{totalLotes}</p>
+            </div>
+          </div>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+          <div className="proy-stat-card">
+            <div className="proy-stat-icon proy-stat-icon--orange">👥</div>
+            <div>
+              <p className="proy-stat-label">Avance Promedio</p>
+              <p className="proy-stat-value">{avancePromedio}%</p>
+            </div>
+          </div>
+        </div>
 
-      {!loading && proyectos.length === 0 && (
-        <p>No hay proyectos registrados.</p>
-      )}
+        {/* ── TOOLBAR ── */}
+        <div className="proy-toolbar">
+          <div className="proy-search-wrapper">
+            <span className="proy-search-icon">🔍</span>
+            <input
+              className="proy-search-input"
+              type="text"
+              placeholder="Buscar proyecto o cliente..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
+          </div>
+          <button className="btn-crear" onClick={() => setOpenModal(true)}>
+            + &nbsp;Nuevo Proyecto
+          </button>
+        </div>
 
-      {proyectos.length > 0 && (
-        <table className="proyectos-table">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Cliente</th>
-              <th>Estado</th>
-              <th>Fecha Inicio</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
+        {/* ── ESTADOS ── */}
+        {loading && <p className="proy-msg">Cargando proyectos...</p>}
+        {error && <p className="proy-msg proy-msg--error">{error}</p>}
+        {!loading && proyectosFiltrados.length === 0 && (
+          <p className="proy-msg">No hay proyectos registrados.</p>
+        )}
 
-          <tbody>
-            {proyectos.map((proyecto) => (
-              <tr key={proyecto._id}>
-                <td>{proyecto.nombre}</td>
+        {/* ── GRID DE CARDS ── */}
+        <div className="proy-cards-grid">
+          {proyectosFiltrados.map((proyecto) => {
+            const estado = proyecto.estado?.toUpperCase();
+            const avance = proyecto.avance ?? 0;
 
-                <td>{proyecto.cliente?.nombre || "-"}</td>
+            const intervenciones = Object.entries(
+              proyecto.actividades_por_intervencion ?? {}
+            ).filter(([, arr]) => Array.isArray(arr) && arr.length > 0);
 
-                <td>{proyecto.estado}</td>
+            const presupuesto = proyecto.presupuesto_por_intervencion ?? {};
 
-                <td>
-                  {proyecto.fecha_inicio
-                    ? new Date(
-                        proyecto.fecha_inicio
-                      ).toLocaleDateString()
-                    : "-"}
-                </td>
+            return (
+              <div key={proyecto._id} className="proy-card">
 
-                <td>
-                  <button
-                    onClick={() =>
-                      handleDelete(proyecto._id)
-                    }
-                    className="btn-eliminar"
-                    disabled={deletingId === proyecto._id}
+                {/* ── Cabecera ── */}
+                <div className="proy-card-header">
+                  <div className="proy-card-icon-wrap">
+                    <Folder size={20} color="#1f8f57" />
+                  </div>
+                  <div className="proy-card-title-block">
+                    <h3 className="proy-card-nombre">{proyecto.nombre}</h3>
+                    <p className="proy-card-cliente">
+                      {proyecto.cliente?.nombre ??
+                        proyecto.cliente?.razon_social ??
+                        "Sin cliente"}
+                    </p>
+                  </div>
+                  <span
+                    className={`proy-estado-chip proy-estado-chip--${estado?.toLowerCase()}`}
                   >
-                    {deletingId === proyecto._id
-                      ? "Eliminando..."
-                      : "Eliminar"}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+                    {ESTADO_LABEL[estado] ?? proyecto.estado}
+                  </span>
+                </div>
 
-      {/* ===========================
-          MODAL CREAR PROYECTO
-         =========================== */}
+                {/* ── Barra de avance ── */}
+                <div className="proy-avance-row">
+                  <span className="proy-avance-label">Avance</span>
+                  <span className="proy-avance-pct">{avance}%</span>
+                </div>
+                <div className="proy-avance-bar-bg">
+                  <div
+                    className="proy-avance-bar-fill"
+                    style={{ width: `${avance}%` }}
+                  />
+                </div>
 
-      <ProyectoModal
-        isOpen={openModal}
-        onClose={() => setOpenModal(false)}
-        onSuccess={() => {
-          setOpenModal(false);
-          cargarProyectos();
-        }}
-      />
-    </div>
+                {/* ── Chips de intervenciones ── */}
+                {intervenciones.length > 0 && (
+                  <div className="proy-intervenciones">
+                    {intervenciones.map(([tipo, acts]) => {
+                      const monto = presupuesto[tipo]?.monto_presupuestado;
+                      return (
+                        <span key={tipo} className="proy-interv-chip">
+                          🌿 {INTERVENCION_LABEL[tipo] ?? tipo}&nbsp;
+                          <strong>{acts.length}</strong>
+                          {fmtMonto(monto) && <>&nbsp;{fmtMonto(monto)}</>}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* ── Valor total ── */}
+                {proyecto.valor_total != null && (
+                  <p className="proy-valor-total">
+                    Valor total intervenciones:{" "}
+                    <strong>{fmtMonto(proyecto.valor_total)}</strong>
+                  </p>
+                )}
+
+                {/* ── Cuadrillas y lotes ── */}
+                <div className="proy-meta-row">
+                  {proyecto.cuadrillas != null && (
+                    <span className="proy-meta-item">
+                      👥 {proyecto.cuadrillas} cuadrilla
+                      {proyecto.cuadrillas !== 1 ? "s" : ""}
+                    </span>
+                  )}
+                  {(proyecto.lotes?.length ?? proyecto.cantidad_lotes) ? (
+                    <span className="proy-meta-item">
+                      📍{" "}
+                      {proyecto.lotes?.length ?? proyecto.cantidad_lotes} lote
+                      {(proyecto.lotes?.length ?? proyecto.cantidad_lotes) !== 1
+                        ? "s"
+                        : ""}
+                    </span>
+                  ) : null}
+                </div>
+
+                {/* ── Footer: fechas + acciones ── */}
+                <div className="proy-card-footer">
+                  <span className="proy-fechas">
+                    {fmtFecha(proyecto.fecha_inicio)} -{" "}
+                    {fmtFecha(proyecto.fecha_fin_estimada)}
+                  </span>
+                  <div className="proy-acciones">
+                    <button
+                      className="proy-btn-accion proy-btn-accion--view"
+                      title="Ver"
+                    >
+                      <Eye size={16} />
+                    </button>
+                    <button
+                      className="proy-btn-accion proy-btn-accion--edit"
+                      title="Editar"
+                    >
+                      <Pencil size={16} />
+                    </button>
+                    <button
+                      className="proy-btn-accion proy-btn-accion--delete"
+                      title="Eliminar"
+                      onClick={() => handleDelete(proyecto._id)}
+                      disabled={deletingId === proyecto._id}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ── MODAL ── */}
+        <ProyectoModal
+          isOpen={openModal}
+          onClose={() => setOpenModal(false)}
+          onSuccess={() => {
+            setOpenModal(false);
+            cargarProyectos();
+          }}
+        />
+      </div>
+    </DashboardLayout>
   );
 };
 
