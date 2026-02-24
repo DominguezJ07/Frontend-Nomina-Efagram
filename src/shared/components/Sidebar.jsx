@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import {
     LayoutDashboard, BarChart3, MapPin, Play, Folder,
     Users, CheckSquare, ChevronDown, Layers, Building,
-    Grid, ClipboardList, AlertTriangle, Calendar, Clock
+    ClipboardList, AlertTriangle, Calendar, Clock
 } from "lucide-react";
 import "./sidebar.css";
 
@@ -93,9 +93,6 @@ export default function Sidebar() {
                         </div>
                         <div className={`submenu-item ${isActiveSub("/territorial/fincas")}`}  onClick={() => navigate("/territorial/fincas")}>
                             <Building size={16} />Fincas
-                        </div>
-                        <div className={`submenu-item ${isActiveSub("/territorial/lotes")}`}   onClick={() => navigate("/territorial/lotes")}>
-                            <Grid size={16} />Lotes
                         </div>
                     </div>
                 )}

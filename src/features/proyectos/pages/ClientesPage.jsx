@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { getClientes, deleteCliente } from "../services/clientesService";
-import ClienteModal from "../components/ClienteModal";
+import { getClientes, deleteCliente } from "../services/Clientesservice";
+import ClienteModal from "../components/Clientemodal";
 import DashboardLayout from "../../../app/layouts/DashboardLayout";
 import "../../../assets/styles/proyectos.css";
 import {
@@ -13,24 +13,25 @@ const iniciales = (str = "") =>
   str.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
 
 // ══════════════════════════════════════════════════════════
-// CARD DE CLIENTE — replica exacta del diseño de la imagen
+// CARD DE CLIENTE
 // ══════════════════════════════════════════════════════════
 const ClienteCard = ({ cliente, onVer, onEditar, onEliminar, eliminando }) => {
   const cantProyectos = cliente.proyectos?.length ?? cliente.cantidad_proyectos ?? 0;
 
   return (
-    <div style={{
-      background: "#fff",
-      border: "1px solid #e6e8ef",
-      borderRadius: 16,
-      padding: "20px 20px 16px",
-      boxShadow: "0 2px 10px rgba(15,23,42,0.06)",
-      display: "flex",
-      flexDirection: "column",
-      gap: 0,
-      transition: "box-shadow 0.18s ease, transform 0.18s ease",
-      cursor: "default",
-    }}
+    <div
+      style={{
+        background: "#fff",
+        border: "1px solid #e6e8ef",
+        borderRadius: 16,
+        padding: "20px 20px 16px",
+        boxShadow: "0 2px 10px rgba(15,23,42,0.06)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 0,
+        transition: "box-shadow 0.18s ease, transform 0.18s ease",
+        cursor: "default",
+      }}
       onMouseEnter={e => {
         e.currentTarget.style.boxShadow = "0 8px 28px rgba(15,23,42,0.12)";
         e.currentTarget.style.transform = "translateY(-2px)";
@@ -42,8 +43,6 @@ const ClienteCard = ({ cliente, onVer, onEditar, onEliminar, eliminando }) => {
     >
       {/* ── FILA SUPERIOR: avatar + nombre + badge ── */}
       <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 12 }}>
-
-        {/* Avatar circular con iniciales */}
         <div style={{
           width: 50, height: 50, flexShrink: 0,
           borderRadius: "50%",
@@ -59,7 +58,6 @@ const ClienteCard = ({ cliente, onVer, onEditar, onEliminar, eliminando }) => {
           </span>
         </div>
 
-        {/* Nombre + NIT */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{
             margin: 0,
@@ -74,7 +72,6 @@ const ClienteCard = ({ cliente, onVer, onEditar, onEliminar, eliminando }) => {
           </p>
         </div>
 
-        {/* Badge estado — alineado arriba a la derecha */}
         <span style={{
           flexShrink: 0,
           display: "inline-flex", alignItems: "center", gap: 4,
@@ -115,13 +112,10 @@ const ClienteCard = ({ cliente, onVer, onEditar, onEliminar, eliminando }) => {
 
       {/* ── PIE: proyectos + acciones ── */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-
-        {/* Contador proyectos */}
         <span style={{ fontSize: 13, color: "#64748b", fontWeight: 500 }}>
           {cantProyectos} proyecto{cantProyectos !== 1 ? "s" : ""}
         </span>
 
-        {/* Botones de acción */}
         <div style={{ display: "flex", gap: 6 }}>
           <button
             title="Ver detalle"
@@ -138,12 +132,16 @@ const ClienteCard = ({ cliente, onVer, onEditar, onEliminar, eliminando }) => {
             <Pencil size={16} />
           </button>
           <button
-            title={cliente.activo ? "Desactivar" : "Ya inactivo"}
+            title={cliente.activo ? "Desactivar cliente" : "Cliente ya inactivo"}
             onClick={() => onEliminar(cliente)}
             disabled={eliminando === cliente._id || !cliente.activo}
             className="proy-btn-accion proy-btn-accion--delete"
+            style={{ opacity: (!cliente.activo || eliminando === cliente._id) ? 0.4 : 1 }}
           >
-            <Trash2 size={16} />
+            {eliminando === cliente._id
+              ? <span style={{ fontSize: 11 }}>...</span>
+              : <Trash2 size={16} />
+            }
           </button>
         </div>
       </div>
@@ -152,7 +150,7 @@ const ClienteCard = ({ cliente, onVer, onEditar, onEliminar, eliminando }) => {
 };
 
 // ══════════════════════════════════════════════════════════
-// MODAL VER DETALLE (sin cambios funcionales)
+// MODAL VER DETALLE
 // ══════════════════════════════════════════════════════════
 const ClienteDetailModal = ({ cliente, onClose, onEdit }) => {
   if (!cliente) return null;
@@ -189,10 +187,10 @@ const ClienteDetailModal = ({ cliente, onClose, onEdit }) => {
         {/* Body */}
         <div style={{ padding: "12px 24px 20px" }}>
           {[
-            { label: "Teléfono",   value: cliente.telefono,   Icon: Phone },
-            { label: "Email",      value: cliente.email,      Icon: Mail  },
-            { label: "Dirección",  value: cliente.direccion,               },
-            { label: "Ciudad",     value: cliente.ciudad,                  },
+            { label: "Teléfono",  value: cliente.telefono,  Icon: Phone },
+            { label: "Email",     value: cliente.email,     Icon: Mail  },
+            { label: "Dirección", value: cliente.direccion              },
+            { label: "Ciudad",    value: cliente.ciudad                 },
           ].map(({ label, value, Icon }) => value ? (
             <div key={label} style={{ display: "flex", gap: 10, padding: "9px 0", borderBottom: "1px solid #f0f2f5", alignItems: "center" }}>
               {Icon && <Icon size={14} color="#94a3b8" />}
@@ -242,6 +240,13 @@ const ClientesPage = () => {
   const [filtroActivo, setFiltroActivo] = useState("todos");
   const [deletingId,   setDeletingId]   = useState(null);
 
+  // ── Notificación inline (reemplaza alert) ─────────────
+  const [toast, setToast] = useState(null); // { tipo: "error"|"ok", msg }
+  const mostrarToast = (tipo, msg) => {
+    setToast({ tipo, msg });
+    setTimeout(() => setToast(null), 4000);
+  };
+
   const [modal, setModal] = useState({ open: false, tipo: "crear", cliente: null });
 
   const abrirCrear  = ()  => setModal({ open: true, tipo: "crear",  cliente: null });
@@ -249,6 +254,7 @@ const ClientesPage = () => {
   const abrirEditar = (c) => setModal({ open: true, tipo: "editar", cliente: c    });
   const cerrarModal = ()  => setModal(prev => ({ ...prev, open: false }));
 
+  // ── Cargar clientes ───────────────────────────────────
   const cargarClientes = async () => {
     try {
       setLoading(true);
@@ -263,14 +269,32 @@ const ClientesPage = () => {
     }
   };
 
+  // ── Eliminar / Desactivar ─────────────────────────────
   const handleDelete = async (cliente) => {
     if (!window.confirm(`¿Seguro que deseas desactivar a "${cliente.razon_social}"?`)) return;
+
     try {
       setDeletingId(cliente._id);
       await deleteCliente(cliente._id);
       await cargarClientes();
+      mostrarToast("ok", `"${cliente.razon_social}" fue desactivado correctamente.`);
     } catch (err) {
-      alert(err?.response?.data?.message ?? "No se pudo desactivar el cliente");
+      console.error("Error eliminando cliente:", err?.response ?? err);
+
+      const status = err?.response?.status;
+      let msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.errors?.[0]?.message ||
+        err?.message ||
+        "No se pudo desactivar el cliente.";
+
+      if (status === 403) {
+        msg = "No tienes permisos para desactivar clientes. Contacta al administrador.";
+      } else if (status === 404) {
+        msg = "El cliente no fue encontrado. Recarga la página e intenta de nuevo.";
+      }
+
+      mostrarToast("error", msg);
     } finally {
       setDeletingId(null);
     }
@@ -301,12 +325,35 @@ const ClientesPage = () => {
     <DashboardLayout>
       <div style={{ fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif" }}>
 
+        {/* ── TOAST NOTIFICACIÓN ── */}
+        {toast && (
+          <div style={{
+            position: "fixed", top: 20, right: 24, zIndex: 9999,
+            background: toast.tipo === "ok" ? "#e8f5ee" : "#fef2f2",
+            border: `1.5px solid ${toast.tipo === "ok" ? "rgba(31,143,87,0.4)" : "#fecaca"}`,
+            color: toast.tipo === "ok" ? "#1f8f57" : "#dc2626",
+            padding: "12px 18px",
+            borderRadius: 12,
+            fontSize: 14, fontWeight: 600,
+            boxShadow: "0 8px 24px rgba(15,23,42,0.12)",
+            maxWidth: 380,
+            display: "flex", alignItems: "center", gap: 10,
+          }}>
+            <span>{toast.tipo === "ok" ? "✓" : "✕"}</span>
+            <span>{toast.msg}</span>
+            <button
+              onClick={() => setToast(null)}
+              style={{ background: "none", border: "none", cursor: "pointer", marginLeft: "auto", fontSize: 16, color: "inherit", opacity: 0.6 }}
+            >×</button>
+          </div>
+        )}
+
         {/* ── STATS ── */}
         <div style={{ display: "flex", gap: 16, marginBottom: 24, flexWrap: "wrap" }}>
           {[
-            { icon: Building2,  label: "Total Clientes", value: clientes.length, color: "#1f8f57", bg: "#e8f5ee" },
-            { icon: CheckCircle, label: "Activos",        value: totalActivos,    color: "#1f8f57", bg: "#e8f5ee" },
-            { icon: XCircle,    label: "Inactivos",       value: totalInactivos,  color: "#dc2626", bg: "#fce4ec" },
+            { icon: Building2,   label: "Total Clientes", value: clientes.length, color: "#1f8f57", bg: "#e8f5ee" },
+            { icon: CheckCircle, label: "Activos",         value: totalActivos,    color: "#1f8f57", bg: "#e8f5ee" },
+            { icon: XCircle,     label: "Inactivos",       value: totalInactivos,  color: "#dc2626", bg: "#fce4ec" },
           ].map((stat) => {
             const Icon = stat.icon;
             return (
@@ -325,7 +372,6 @@ const ClientesPage = () => {
 
         {/* ── TOOLBAR ── */}
         <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap", alignItems: "center" }}>
-          {/* Búsqueda */}
           <div style={{ flex: 1, minWidth: 220, position: "relative", display: "flex", alignItems: "center" }}>
             <span style={{ position: "absolute", left: 14, fontSize: 15, pointerEvents: "none" }}>🔍</span>
             <input
@@ -337,7 +383,6 @@ const ClientesPage = () => {
             />
           </div>
 
-          {/* Filtros estado */}
           <div style={{ display: "flex", gap: 6 }}>
             {[
               { key: "todos",     label: "Todos"     },
@@ -350,13 +395,12 @@ const ClientesPage = () => {
             ))}
           </div>
 
-          {/* Nuevo cliente */}
           <button onClick={abrirCrear} style={{ background: "#1f8f57", color: "#fff", border: "none", padding: "11px 18px", borderRadius: 12, fontWeight: 700, cursor: "pointer", fontSize: 14, boxShadow: "0 4px 12px rgba(31,143,87,0.25)", whiteSpace: "nowrap" }}>
             + &nbsp;Nuevo Cliente
           </button>
         </div>
 
-        {/* ── ESTADOS DE CARGA ── */}
+        {/* ── ESTADOS ── */}
         {loading && <p style={{ color: "#64748b", fontSize: 14 }}>Cargando clientes...</p>}
         {error   && <p style={{ color: "#dc2626", fontSize: 14 }}>{error}</p>}
         {!loading && clientesFiltrados.length === 0 && !error && (
@@ -383,7 +427,6 @@ const ClientesPage = () => {
               ))}
             </div>
 
-            {/* Contador resultados */}
             <p style={{ marginTop: 18, fontSize: 13, color: "#94a3b8", textAlign: "right" }}>
               Mostrando <strong style={{ color: "#475569" }}>{clientesFiltrados.length}</strong> de <strong style={{ color: "#475569" }}>{clientes.length}</strong> clientes
             </p>
@@ -404,7 +447,12 @@ const ClientesPage = () => {
           isOpen={modal.open && (modal.tipo === "crear" || modal.tipo === "editar")}
           cliente={modal.tipo === "editar" ? modal.cliente : null}
           onClose={cerrarModal}
-          onSuccess={() => { cerrarModal(); cargarClientes(); }}
+          onSuccess={() => {
+            const accion = modal.tipo === "editar" ? "actualizado" : "creado";
+            cerrarModal();
+            cargarClientes();
+            mostrarToast("ok", `Cliente ${accion} correctamente.`);
+          }}
         />
       </div>
     </DashboardLayout>
