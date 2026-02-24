@@ -195,3 +195,44 @@
     transform: translateY(0);
   }
 }
+
+/* ===== SUBMENU ANIDADO (ej: Ubicación dentro de Configuración) ===== */
+
+/* El item que actúa como grupo-título dentro del submenu */
+.submenu-group {
+  font-weight: 500;
+  justify-content: flex-start;
+}
+
+.submenu-group span {
+  flex: 1;
+}
+
+.arrow-sub {
+  margin-left: auto;
+  opacity: 0.5;
+}
+
+/* Submenu de segundo nivel */
+.submenu-nested {
+  margin-left: 16px;
+  margin-top: 2px;
+  padding-left: 10px;
+  border-left: 1px solid rgba(255,255,255,0.06);
+  gap: 10px;
+}
+
+.submenu-nested .submenu-item {
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.submenu-nested .submenu-item:hover {
+  color: #16a34a;
+  opacity: 1;
+}
+
+/* ── Separador de sección "Sistema" ── */
+.menu-title:last-of-type {
+  margin-top: 24px;
+}

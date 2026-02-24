@@ -26,7 +26,7 @@
   padding: 12px 28px 24px;
   min-height: 0;
   background: #f4f6f9;
-  height: 100vh;
+  height: 100vh; /* Asegura que ocupe toda la altura de la ventana */
 }
 
 /* ======================================================
@@ -73,30 +73,30 @@
 .territorial-stat-text h3 { margin: 2px 0 0; font-size: 22px; font-weight: 700; color: #111827; line-height: 1; }
 
 /* ======================================================
-   CARD TABLA
+   CARD TABLA - MEJORADO CON SCROLL
 ====================================================== */
 
 .zonas-card {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  min-height: 0;
+  overflow: hidden; /* Importante: evita que el contenido se desborde */
+  min-height: 0; /* Permite que flex funcione correctamente */
   background: #fff;
   border-radius: 16px;
   border: 1px solid #e8edf2;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   padding: 0;
-  max-height: calc(100vh - 230px);
-  margin-bottom: 20px;
+  max-height: calc(100vh - 230px); /* Ajustado para incluir el margen inferior */
+  margin-bottom: 20px; /* Espacio en la parte inferior */
 }
 
 /* ======================================================
-   HEADER
+   HEADER — título izq, buscador+botón der
 ====================================================== */
 
 .zonas-card-header {
-  flex-shrink: 0;
+  flex-shrink: 0; /* No se encoge */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -150,7 +150,7 @@
 .zonas-search input::placeholder { color: #9ca3af; }
 
 /* ======================================================
-   BOTÓN PRIMARIO
+   BOTÓN NUEVA ZONA
 ====================================================== */
 
 .btn-primary {
@@ -174,20 +174,36 @@
 .btn-primary:disabled { opacity: 0.6 !important; cursor: not-allowed !important; }
 
 /* ======================================================
-   TABLA CON SCROLL
+   TABLA CON SCROLL - SECCIÓN CLAVE MEJORADA
 ====================================================== */
 
 .zonas-table-scroll {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: auto;
-  min-height: 0;
+  flex: 1; /* Ocupa todo el espacio disponible */
+  overflow-y: auto; /* Scroll vertical cuando sea necesario */
+  overflow-x: auto; /* Scroll horizontal si la tabla es muy ancha */
+  min-height: 0; /* Permite que el contenedor se encoja */
+  position: relative; /* Para el sticky header */
 }
 
-.zonas-table-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
-.zonas-table-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
-.zonas-table-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-.zonas-table-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+/* Estilos para el scrollbar (opcional, mejora visual) */
+.zonas-table-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.zonas-table-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.zonas-table-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.zonas-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
 
 .zonas-table-grid {
   width: 100%;
@@ -201,12 +217,12 @@
   font-weight: 600;
   color: #6b7280;
   border-bottom: 1px solid #f1f5f9;
+  text-align: left;
   font-size: 13px;
   background: #fff;
   position: sticky;
   top: 0;
-  z-index: 10;
-  text-align: left;
+  z-index: 10; /* Asegura que el header quede sobre el contenido */
 }
 
 .zonas-table-grid td {
@@ -215,39 +231,18 @@
   vertical-align: middle;
   font-size: 14px;
   color: #111827;
-  height: 52px;
+  height: 44px;
 }
 
 .zonas-table-grid tbody tr:hover { background: #fafcff; }
 
-/* ── Anchos de columna ── */
-.th-code    { width: 170px; }
-.th-name    { width: 270px; }
-.th-status { width: 199px; padding-right: 32px !important; }
-
-/* ── Acciones: centrado tanto en th como en td ── */
-.th-actions {
-  width: 120px;
-  text-align: center !important;
-  padding-right: 32px !important;
-}
-
-.zonas-table-grid td.td-actions {
-  text-align: center;
-  vertical-align: middle;
-  padding-right: 32px !important;
-  padding-left: 0 !important;
-}
-
-.td-actions-inner {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
+.th-code    { width: 100px; }
+.th-name    { width: 250px; }
+.th-status  { width: 160px; }
+.th-actions { width: 130px; text-align: center; }
 
 /* ======================================================
-   NOMBRE — pin icono
+   NOMBRE — pin verde
 ====================================================== */
 
 .zona-name-cell {
@@ -304,22 +299,29 @@
 }
 
 /* ======================================================
-   BOTONES DE ACCIÓN
+   BOTONES DE ACCIÓN — reset total + estilos propios
 ====================================================== */
 
+.td-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+
+/* all:unset ya aplicado arriba en .zonas-card button */
 .icon-btn {
   width: 34px !important;
   height: 34px !important;
   border-radius: 8px !important;
   border: 1px solid #e5e7eb !important;
   background: #ffffff !important;
-  display: inline-flex !important;
+  display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
   flex-shrink: 0;
   transition: all 0.15s ease;
-  vertical-align: middle;
 }
 
 .icon-btn svg {
@@ -376,7 +378,7 @@
 .territorial-error { color: #dc2626; }
 
 /* ======================================================
-   MODAL
+   MODAL (NuevaZonaModal)
 ====================================================== */
 
 .modal-backdrop {
@@ -450,6 +452,7 @@
 }
 
 .field { display: flex; flex-direction: column; gap: 7px; }
+
 .field span { font-size: 14px; font-weight: 600; color: #374151; }
 
 .field input,
@@ -542,7 +545,7 @@
 }
 
 /* ======================================================
-   MODAL DETALLE DE ZONA
+   MODAL DETALLE DE ZONA (ZonaDetalleModal)
 ====================================================== */
 
 .zdm-overlay {
@@ -586,13 +589,38 @@
   transition: background 0.15s, color 0.15s;
 }
 
-.zdm-close svg { stroke: #4abe8a !important; color: #4abe8a !important; }
-.zdm-close:hover { background: #4abe8a !important; color: #fff !important; }
-.zdm-close:hover svg { stroke: #fff !important; color: #fff !important; }
+.zdm-close svg {
+  stroke: #4abe8a !important;
+  color: #4abe8a !important;
+}
 
-.zdm-header { margin-bottom: 20px; padding-right: 36px; }
-.zdm-title { font-size: 18px; font-weight: 700; color: #1a1a2e; margin: 0 0 3px; }
-.zdm-subtitle { font-size: 13px; color: #8a8fa8; margin: 0; }
+.zdm-close:hover {
+  background: #4abe8a !important;
+  color: #fff !important;
+}
+
+.zdm-close:hover svg {
+  stroke: #fff !important;
+  color: #fff !important;
+}
+
+.zdm-header {
+  margin-bottom: 20px;
+  padding-right: 36px;
+}
+
+.zdm-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 3px;
+}
+
+.zdm-subtitle {
+  font-size: 13px;
+  color: #8a8fa8;
+  margin: 0;
+}
 
 .zdm-name-card {
   display: flex;
@@ -616,11 +644,27 @@
   flex-shrink: 0;
 }
 
-.zdm-pin-wrap svg { stroke: #2fa86a !important; color: #2fa86a !important; }
+.zdm-pin-wrap svg {
+  stroke: #2fa86a !important;
+  color: #2fa86a !important;
+}
 
-.zdm-name-info { display: flex; flex-direction: column; gap: 2px; }
-.zdm-name { font-size: 16px; font-weight: 700; color: #1a1a2e; }
-.zdm-code { font-size: 13px; color: #8a8fa8; }
+.zdm-name-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.zdm-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.zdm-code {
+  font-size: 13px;
+  color: #8a8fa8;
+}
 
 .zdm-estado-box {
   background: #f8f9fb;
@@ -650,8 +694,17 @@
   width: fit-content;
 }
 
-.zdm-badge.active  { background: #e6f9ef; color: #1e9956; border: 1.5px solid #b2edd0; }
-.zdm-badge.inactive { background: #fdeaea; color: #c0392b; border: 1.5px solid #f5c6c6; }
+.zdm-badge.active {
+  background: #e6f9ef;
+  color: #1e9956;
+  border: 1.5px solid #b2edd0;
+}
+
+.zdm-badge.inactive {
+  background: #fdeaea;
+  color: #c0392b;
+  border: 1.5px solid #f5c6c6;
+}
 
 @keyframes zdm-fade-in {
   from { opacity: 0; }
@@ -661,142 +714,4 @@
 @keyframes zdm-slide-up {
   from { opacity: 0; transform: translate(-50%, -46%); }
   to   { opacity: 1; transform: translate(-50%, -50%); }
-}
-
-/* ======================================================
-   FINCAS — 4 stats cards
-====================================================== */
-
-.fincas-stats-4 {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.territorial-stat-icon.icon-teal {
-  background: #f0fdfa;
-  border-color: #0d9488;
-  color: #0d9488;
-}
-
-/* ======================================================
-   FINCAS — barra búsqueda + filtro
-====================================================== */
-
-.fincas-search-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 20px;
-  border-bottom: 1px solid #e8edf2;
-  flex-shrink: 0;
-}
-
-.fincas-search-input {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 10px 14px;
-  color: #6b7280;
-}
-
-.fincas-search-input input {
-  flex: 1;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-size: 13.5px;
-  color: #111827;
-}
-
-.fincas-search-input input::placeholder { color: #9ca3af; }
-
-.fincas-select-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.fincas-select {
-  appearance: none;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 10px 36px 10px 14px;
-  font-size: 13.5px;
-  color: #374151;
-  cursor: pointer;
-  outline: none;
-  min-width: 180px;
-}
-
-.fincas-select:focus { border-color: #16a34a; }
-
-.fincas-select-arrow {
-  position: absolute;
-  right: 12px;
-  color: #6b7280;
-  pointer-events: none;
-}
-
-/* ======================================================
-   FINCAS — estilos tabla
-====================================================== */
-
-.fincas-table th,
-.fincas-table td {
-  font-size: 13.5px;
-}
-
-.finca-codigo-badge {
-  display: inline-block;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  padding: 3px 10px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #374151;
-  letter-spacing: 0.3px;
-}
-
-.finca-tree-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: #f0faf4;
-  border: 1.5px solid #16a34a;
-  color: #16a34a;
-  flex-shrink: 0;
-}
-
-.finca-badge-activa {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: #f0fdf4;
-  border: 1.5px solid #16a34a;
-  color: #16a34a;
-  border-radius: 20px;
-  padding: 4px 12px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.finca-badge-inactiva {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: #fef2f2;
-  border: 1.5px solid #dc2626;
-  color: #dc2626;
-  border-radius: 20px;
-  padding: 4px 12px;
-  font-size: 12px;
-  font-weight: 600;
 }
