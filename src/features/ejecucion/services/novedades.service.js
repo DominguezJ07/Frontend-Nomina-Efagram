@@ -1,8 +1,15 @@
 import httpClient from '../../../core/api/httpClient';
 
 export const getNovedades = async () => {
-  const response = await httpClient.get('/novedades');
-  return response.data;
+  try {
+    const response = await httpClient.get('/novedades');
+    console.log('STATUS:', response.status);
+    console.log('DATA:', response.data);
+    return response.data;
+  } catch (err) {
+    console.error('ERROR ENDPOINT:', err?.response?.status, err?.response?.data);
+    throw err;
+  }
 };
 
 export const createNovedad = async (data) => {

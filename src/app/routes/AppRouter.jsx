@@ -15,17 +15,13 @@ export default function AppRouter() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
-
       <Route path="/territorial/zonas"   element={<PrivateRoute><ZonasPage /></PrivateRoute>} />
       <Route path="/territorial/nucleos" element={<PrivateRoute><NucleosPage /></PrivateRoute>} />
       <Route path="/territorial/fincas"  element={<PrivateRoute><FincasPage /></PrivateRoute>} />
-
       <Route path="/ejecucion/registros-diarios"   element={<PrivateRoute><RegistroDiarioPage /></PrivateRoute>} />
-      <Route path="/ejecucion/novedades"          element={<PrivateRoute><NovedadesPage /></PrivateRoute>} />
-      <Route path="/ejecucion/calendario"         element={<PrivateRoute><CalendarioPage /></PrivateRoute>} />
-      <Route path="/ejecucion/semanas-operativas" element={<PrivateRoute><SemanasOperativasPage /></PrivateRoute>} />
-
-      <Route path="*" element={<Navigate to="/" />} />
+      <Route path="/ejecucion/novedades"           element={<PrivateRoute><NovedadesPage /></PrivateRoute>} />
+      <Route path="/ejecucion/calendario"          element={<PrivateRoute><CalendarioPage /></PrivateRoute>} />
+      <Route path="/ejecucion/semanas-operativas" element={<PrivateRoute><SemanasOperativasPage /></PrivateRoute>} />      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
 }

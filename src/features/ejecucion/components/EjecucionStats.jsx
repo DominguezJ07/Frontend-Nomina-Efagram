@@ -1,10 +1,11 @@
 import { ClipboardList, CheckCircle, Clock, Timer } from 'lucide-react';
 
 export default function EjecucionStats({ registros = [] }) {
-  const total     = registros.length;
-  const aprobados = registros.filter((r) => (r?.estado ?? '').toLowerCase().includes('aprobad')).length;
+  const total      = registros.length;
+  const aprobados  = registros.filter((r) => (r?.estado ?? '').toLowerCase().includes('aprobad')).length;
   const pendientes = registros.filter((r) => (r?.estado ?? '').toLowerCase().includes('pendiente')).length;
-  const totalHoras = registros.reduce((acc, r) => acc + (Number(r?.horas) || 0), 0);
+  // CORRECCIÓN: el campo en el modelo es "horas_trabajadas", no "horas"
+  const totalHoras = registros.reduce((acc, r) => acc + (Number(r?.horas_trabajadas) || 0), 0);
 
   return (
     <div className="ejecucion-stats">

@@ -64,7 +64,7 @@ export default function Sidebar() {
                         <div className={`submenu-item ${isActive("/ejecucion/registros-diarios") ? "submenu-active" : ""}`} onClick={() => navigate("/ejecucion/registros-diarios")}><ClipboardList size={16} />Registro Diario</div>
                         <div className={`submenu-item ${isActive("/ejecucion/novedades") ? "submenu-active" : ""}`} onClick={() => navigate("/ejecucion/novedades")}><AlertTriangle size={16} />Novedades</div>
                         <div className={`submenu-item ${isActive("/ejecucion/calendario") ? "submenu-active" : ""}`} onClick={() => navigate("/ejecucion/calendario")}><Calendar size={16} />Calendario</div>
-                        <div className={`submenu-item ${isActive("/ejecucion/semanas-operativas") ? "submenu-active" : ""}`} onClick={() => navigate("/ejecucion/semanas-operativas")}><Clock size={16} />Semanas Operativas</div>
+                        <div className={`submenu-item ${isActive("/ejecucion/semanaoperativas") ? "submenu-active" : ""}`} onClick={() => navigate("/ejecucion/semanas-operativas")}><Clock size={16} />Semanas Operativas</div>
                     </div>
                 )}
 
