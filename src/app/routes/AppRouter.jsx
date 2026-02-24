@@ -3,11 +3,6 @@ import LoginPage     from '../../features/auth/pages/LoginPage';
 import DashboardPage from '../../features/dashboard/pages/DashboardPage';
 import PrivateRoute  from './PrivateRoute';
 
-// Territorial
-import ZonasPage   from '../../features/territorial/pages/ZonasPage';
-import NucleosPage from '../../features/territorial/pages/NucleosPage';
-import FincasPage  from '../../features/territorial/pages/FincasPage';
-
 // Ejecución
 import RegistroDiarioPage    from '../../features/ejecucion/pages/RegistroDiarioPage';
 import NovedadesPage         from '../../features/ejecucion/pages/NovedadesPage';
@@ -15,10 +10,14 @@ import CalendarioPage        from '../../features/ejecucion/pages/CalendarioPage
 import SemanasOperativasPage from '../../features/ejecucion/pages/SemanasOperativasPage';
 
 // Proyectos
-import ProyectosPage          from '../../features/proyectos/pages/ProyectosPage';
-import ClientesPage           from '../../features/proyectos/pages/ClientesPage';
+import ProyectosPage           from '../../features/proyectos/pages/ProyectosPage';
+import ClientesPage            from '../../features/proyectos/pages/ClientesPage';
 import CatalogoActividadesPage from '../../features/proyectos/pages/CatalogoActividadesPage';
-// PreciosPage eliminado
+
+// Configuración → Ubicación (antes Territorial)
+import ZonasPage   from '../../features/territorial/pages/ZonasPage';
+import NucleosPage from '../../features/territorial/pages/NucleosPage';
+import FincasPage  from '../../features/territorial/pages/FincasPage';
 
 export default function AppRouter() {
   return (
@@ -29,22 +28,32 @@ export default function AppRouter() {
       {/* Dashboard */}
       <Route path="/" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
 
-      {/* ── Territorial ── */}
-      <Route path="/territorial/zonas"   element={<PrivateRoute><ZonasPage /></PrivateRoute>} />
-      <Route path="/territorial/nucleos" element={<PrivateRoute><NucleosPage /></PrivateRoute>} />
-      <Route path="/territorial/fincas"  element={<PrivateRoute><FincasPage /></PrivateRoute>} />
-
       {/* ── Ejecución ── */}
-      <Route path="/ejecucion/registros-diarios"   element={<PrivateRoute><RegistroDiarioPage /></PrivateRoute>} />
-      <Route path="/ejecucion/novedades"           element={<PrivateRoute><NovedadesPage /></PrivateRoute>} />
-      <Route path="/ejecucion/calendario"          element={<PrivateRoute><CalendarioPage /></PrivateRoute>} />
-      <Route path="/ejecucion/semanas-operativas"  element={<PrivateRoute><SemanasOperativasPage /></PrivateRoute>} />
+      <Route path="/ejecucion/registros-diarios"  element={<PrivateRoute><RegistroDiarioPage /></PrivateRoute>} />
+      <Route path="/ejecucion/novedades"          element={<PrivateRoute><NovedadesPage /></PrivateRoute>} />
+      <Route path="/ejecucion/calendario"         element={<PrivateRoute><CalendarioPage /></PrivateRoute>} />
+      <Route path="/ejecucion/semanas-operativas" element={<PrivateRoute><SemanasOperativasPage /></PrivateRoute>} />
 
       {/* ── Proyectos ── */}
-      <Route path="/proyectos"            element={<PrivateRoute><ProyectosPage /></PrivateRoute>} />
-      <Route path="/clientes"             element={<PrivateRoute><ClientesPage /></PrivateRoute>} />
-      <Route path="/catalogo-actividades" element={<PrivateRoute><CatalogoActividadesPage /></PrivateRoute>} />
-      {/* /precios eliminado */}
+      <Route path="/proyectos" element={<PrivateRoute><ProyectosPage /></PrivateRoute>} />
+
+      {/* ── Configuración → Catálogo Clientes ── */}
+      <Route path="/configuracion/catalogo-clientes"    element={<PrivateRoute><ClientesPage /></PrivateRoute>} />
+
+      {/* ── Configuración → Catálogo Actividades ── */}
+      <Route path="/configuracion/catalogo-actividades" element={<PrivateRoute><CatalogoActividadesPage /></PrivateRoute>} />
+
+      {/* ── Configuración → Ubicación ── */}
+      <Route path="/configuracion/ubicacion/zonas"   element={<PrivateRoute><ZonasPage /></PrivateRoute>} />
+      <Route path="/configuracion/ubicacion/nucleos" element={<PrivateRoute><NucleosPage /></PrivateRoute>} />
+      <Route path="/configuracion/ubicacion/fincas"  element={<PrivateRoute><FincasPage /></PrivateRoute>} />
+
+      {/* Rutas antiguas — redirigen automáticamente */}
+      <Route path="/clientes"             element={<Navigate to="/configuracion/catalogo-clientes"    replace />} />
+      <Route path="/catalogo-actividades" element={<Navigate to="/configuracion/catalogo-actividades" replace />} />
+      <Route path="/territorial/zonas"    element={<Navigate to="/configuracion/ubicacion/zonas"      replace />} />
+      <Route path="/territorial/nucleos"  element={<Navigate to="/configuracion/ubicacion/nucleos"    replace />} />
+      <Route path="/territorial/fincas"   element={<Navigate to="/configuracion/ubicacion/fincas"     replace />} />
 
       {/* Wildcard */}
       <Route path="*" element={<Navigate to="/" replace />} />

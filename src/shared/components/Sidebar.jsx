@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-    LayoutDashboard, BarChart3, MapPin, Play, Folder,
+    LayoutDashboard, BarChart3, Play, Folder,
     Users, CheckSquare, ChevronDown, Layers, Building,
-    ClipboardList, AlertTriangle, Calendar, Clock
+    ClipboardList, AlertTriangle, Calendar, Clock,
+    Settings, MapPin
 } from "lucide-react";
 import "./sidebar.css";
 
@@ -11,29 +12,30 @@ export default function Sidebar() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // ── Detección de sección activa por ruta ──────────────────
-    const isTerritorial = location.pathname.startsWith("/territorial");
-    const isEjecucion   = location.pathname.startsWith("/ejecucion");
-    const isProyectos   = location.pathname.startsWith("/proyectos") ||
-                          location.pathname.startsWith("/clientes")  ||
-                          location.pathname.startsWith("/catalogo-actividades");
+    // ── Detección de sección activa por ruta ─────────────────
+    const isEjecucion     = location.pathname.startsWith("/ejecucion");
+    const isProyectos     = location.pathname.startsWith("/proyectos");
+    const isConfiguracion = location.pathname.startsWith("/configuracion");
 
-    // null = seguir la ruta automáticamente; true/false = el usuario lo cambió manualmente
-    const [manualTerritorial, setManualTerritorial] = useState(null);
-    const [manualEjecucion,   setManualEjecucion]   = useState(null);
-    const [manualProyectos,   setManualProyectos]   = useState(null);
-    const [openPersonal,      setOpenPersonal]      = useState(false);
-    const [openActividades,   setOpenActividades]   = useState(false);
-    const [openReportes,      setOpenReportes]      = useState(false);
+    // ── Estados de apertura manual ────────────────────────────
+    const [manualEjecucion,     setManualEjecucion]     = useState(null);
+    const [manualProyectos,     setManualProyectos]     = useState(null);
+    const [manualConfiguracion, setManualConfiguracion] = useState(null);
+    const [openReportes,        setOpenReportes]        = useState(false);
 
-    // Se abre automáticamente según la ruta; el usuario puede abrir/cerrar manualmente
-    const openTerritorial = manualTerritorial !== null ? manualTerritorial : isTerritorial;
-    const openEjecucion   = manualEjecucion   !== null ? manualEjecucion   : isEjecucion;
-    const openProyectos   = manualProyectos   !== null ? manualProyectos   : isProyectos;
+    // ── Sub-menús dentro de Configuración ─────────────────────
+    const [openUbicacion, setOpenUbicacion] = useState(
+        location.pathname.startsWith("/configuracion/ubicacion")
+    );
 
-    const toggleTerritorial = () => setManualTerritorial(!openTerritorial);
-    const toggleEjecucion   = () => setManualEjecucion(!openEjecucion);
-    const toggleProyectos   = () => setManualProyectos(!openProyectos);
+    // ── Apertura automática según ruta ────────────────────────
+    const openEjecucion     = manualEjecucion     !== null ? manualEjecucion     : isEjecucion;
+    const openProyectos     = manualProyectos     !== null ? manualProyectos     : isProyectos;
+    const openConfiguracion = manualConfiguracion !== null ? manualConfiguracion : isConfiguracion;
+
+    const toggleEjecucion     = () => setManualEjecucion(!openEjecucion);
+    const toggleProyectos     = () => setManualProyectos(!openProyectos);
+    const toggleConfiguracion = () => setManualConfiguracion(!openConfiguracion);
 
     const isActive    = (path) => location.pathname === path;
     const isActiveSub = (path) => location.pathname === path ? "submenu-active" : "";
@@ -75,28 +77,6 @@ export default function Sidebar() {
                     </div>
                 )}
 
-                {/* ── TERRITORIAL ── */}
-                <div
-                    className={`menu-item ${isTerritorial ? "active" : ""}`}
-                    onClick={toggleTerritorial}
-                >
-                    <MapPin size={18} /><span>Territorial</span>
-                    <ChevronDown size={16} className={`arrow ${openTerritorial ? "rotate" : ""}`} />
-                </div>
-                {openTerritorial && (
-                    <div className="submenu">
-                        <div className={`submenu-item ${isActiveSub("/territorial/zonas")}`}   onClick={() => navigate("/territorial/zonas")}>
-                            <MapPin size={16} />Zonas
-                        </div>
-                        <div className={`submenu-item ${isActiveSub("/territorial/nucleos")}`} onClick={() => navigate("/territorial/nucleos")}>
-                            <Layers size={16} />Núcleos
-                        </div>
-                        <div className={`submenu-item ${isActiveSub("/territorial/fincas")}`}  onClick={() => navigate("/territorial/fincas")}>
-                            <Building size={16} />Fincas
-                        </div>
-                    </div>
-                )}
-
                 {/* ── EJECUCIÓN ── */}
                 <div
                     className={`menu-item ${isEjecucion ? "active" : ""}`}
@@ -107,13 +87,13 @@ export default function Sidebar() {
                 </div>
                 {openEjecucion && (
                     <div className="submenu">
-                        <div className={`submenu-item ${isActiveSub("/ejecucion/registros-diarios")}`}  onClick={() => navigate("/ejecucion/registros-diarios")}>
+                        <div className={`submenu-item ${isActiveSub("/ejecucion/registros-diarios")}`} onClick={() => navigate("/ejecucion/registros-diarios")}>
                             <ClipboardList size={16} />Registro Diario
                         </div>
-                        <div className={`submenu-item ${isActiveSub("/ejecucion/novedades")}`}          onClick={() => navigate("/ejecucion/novedades")}>
+                        <div className={`submenu-item ${isActiveSub("/ejecucion/novedades")}`} onClick={() => navigate("/ejecucion/novedades")}>
                             <AlertTriangle size={16} />Novedades
                         </div>
-                        <div className={`submenu-item ${isActiveSub("/ejecucion/calendario")}`}         onClick={() => navigate("/ejecucion/calendario")}>
+                        <div className={`submenu-item ${isActiveSub("/ejecucion/calendario")}`} onClick={() => navigate("/ejecucion/calendario")}>
                             <Calendar size={16} />Calendario
                         </div>
                         <div className={`submenu-item ${isActiveSub("/ejecucion/semanas-operativas")}`} onClick={() => navigate("/ejecucion/semanas-operativas")}>
@@ -132,42 +112,76 @@ export default function Sidebar() {
                 </div>
                 {openProyectos && (
                     <div className="submenu">
-                        <div className={`submenu-item ${isActiveSub("/proyectos")}`}            onClick={() => navigate("/proyectos")}>
+                        <div className={`submenu-item ${isActiveSub("/proyectos")}`} onClick={() => navigate("/proyectos")}>
                             <Folder size={16} />Proyectos
                         </div>
-                        <div className={`submenu-item ${isActiveSub("/clientes")}`}             onClick={() => navigate("/clientes")}>
-                            <Users size={16} />Clientes
+                    </div>
+                )}
+
+                {/* ══════════════════════════════════════════════
+                    CONFIGURACIÓN — siempre al final del menú
+                ══════════════════════════════════════════════ */}
+                <div className="menu-title">Sistema</div>
+
+                <div
+                    className={`menu-item ${isConfiguracion ? "active" : ""}`}
+                    onClick={toggleConfiguracion}
+                >
+                    <Settings size={18} /><span>Configuración</span>
+                    <ChevronDown size={16} className={`arrow ${openConfiguracion ? "rotate" : ""}`} />
+                </div>
+
+                {openConfiguracion && (
+                    <div className="submenu">
+
+                        {/* ── Catálogo Clientes ── */}
+                        <div
+                            className={`submenu-item ${isActiveSub("/configuracion/catalogo-clientes")}`}
+                            onClick={() => navigate("/configuracion/catalogo-clientes")}
+                        >
+                            <Users size={16} />Catálogo Clientes
                         </div>
-                        <div className={`submenu-item ${isActiveSub("/catalogo-actividades")}`} onClick={() => navigate("/catalogo-actividades")}>
+
+                        {/* ── Catálogo Actividades ── */}
+                        <div
+                            className={`submenu-item ${isActiveSub("/configuracion/catalogo-actividades")}`}
+                            onClick={() => navigate("/configuracion/catalogo-actividades")}
+                        >
                             <CheckSquare size={16} />Catálogo Actividades
                         </div>
-                        {/* Precios eliminado */}
-                    </div>
-                )}
 
-                {/* ── PERSONAL / NÓMINA ── */}
-                <div className="menu-item" onClick={() => setOpenPersonal(!openPersonal)}>
-                    <Users size={18} /><span>Personal / Nómina</span>
-                    <ChevronDown size={16} className={`arrow ${openPersonal ? "rotate" : ""}`} />
-                </div>
-                {openPersonal && (
-                    <div className="submenu">
-                        <div className="submenu-item">
-                            <Users size={16} />Empleados
+                        {/* ── Ubicación (antes Territorial) ── */}
+                        <div
+                            className="submenu-item submenu-group"
+                            onClick={() => setOpenUbicacion(!openUbicacion)}
+                        >
+                            <MapPin size={16} />
+                            <span>Ubicación</span>
+                            <ChevronDown size={13} className={`arrow arrow-sub ${openUbicacion ? "rotate" : ""}`} />
                         </div>
-                    </div>
-                )}
+                        {openUbicacion && (
+                            <div className="submenu submenu-nested">
+                                <div
+                                    className={`submenu-item ${isActiveSub("/configuracion/ubicacion/zonas")}`}
+                                    onClick={() => navigate("/configuracion/ubicacion/zonas")}
+                                >
+                                    <MapPin size={14} />Zonas
+                                </div>
+                                <div
+                                    className={`submenu-item ${isActiveSub("/configuracion/ubicacion/nucleos")}`}
+                                    onClick={() => navigate("/configuracion/ubicacion/nucleos")}
+                                >
+                                    <Layers size={14} />Núcleos
+                                </div>
+                                <div
+                                    className={`submenu-item ${isActiveSub("/configuracion/ubicacion/fincas")}`}
+                                    onClick={() => navigate("/configuracion/ubicacion/fincas")}
+                                >
+                                    <Building size={14} />Fincas
+                                </div>
+                            </div>
+                        )}
 
-                {/* ── ACTIVIDADES ── */}
-                <div className="menu-item" onClick={() => setOpenActividades(!openActividades)}>
-                    <CheckSquare size={18} /><span>Actividades</span>
-                    <ChevronDown size={16} className={`arrow ${openActividades ? "rotate" : ""}`} />
-                </div>
-                {openActividades && (
-                    <div className="submenu">
-                        <div className="submenu-item">
-                            <CheckSquare size={16} />Gestión de Actividades
-                        </div>
                     </div>
                 )}
 
