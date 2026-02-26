@@ -1,0 +1,802 @@
+/* ======================================================
+   RESET — neutraliza cualquier estilo global del proyecto
+====================================================== */
+
+.zonas-card *,
+.zonas-card *::before,
+.zonas-card *::after {
+  box-sizing: border-box;
+}
+
+.zonas-card button {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+/* ======================================================
+   LAYOUT GENERAL
+====================================================== */
+
+.configuracion-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 12px 28px 24px;
+  min-height: 0;
+  background: #f4f6f9;
+  height: 100vh;
+}
+
+/* ======================================================
+   CARDS SUPERIORES
+====================================================== */
+
+.configuracion-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  flex-shrink: 0;
+  margin-bottom: 14px;
+}
+
+.configuracion-stat-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid #e8edf2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.configuracion-stat-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid;
+}
+
+.configuracion-stat-icon.icon-green { background: #f0faf4; border-color: #16a34a; color: #16a34a; }
+.configuracion-stat-icon.icon-blue  { background: #f0f7ff; border-color: #2563eb; color: #2563eb; }
+.configuracion-stat-icon.icon-red   { background: #fff0f0; border-color: #dc2626; color: #dc2626; }
+
+.configuracion-stat-icon svg { stroke: currentColor; }
+
+.configuracion-stat-text p  { margin: 0; font-size: 13px; color: #6b7280; font-weight: 500; }
+.configuracion-stat-text h3 { margin: 2px 0 0; font-size: 22px; font-weight: 700; color: #111827; line-height: 1; }
+
+/* ======================================================
+   CARD TABLA
+====================================================== */
+
+.zonas-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #e8edf2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 0;
+  max-height: calc(100vh - 230px);
+  margin-bottom: 20px;
+}
+
+/* ======================================================
+   HEADER
+====================================================== */
+
+.zonas-card-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  gap: 16px;
+}
+
+.zonas-card-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #111827;
+  white-space: nowrap;
+}
+
+.zonas-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+/* ======================================================
+   BUSCADOR
+====================================================== */
+
+.zonas-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 9px 14px;
+  color: #9ca3af;
+  width: 260px;
+}
+
+.zonas-search input {
+  border: none;
+  outline: none;
+  width: 100%;
+  background: transparent;
+  font-size: 14px;
+  color: #111827;
+}
+
+.zonas-search input::placeholder { color: #9ca3af; }
+
+/* ======================================================
+   BOTÓN PRIMARIO
+====================================================== */
+
+.btn-primary {
+  background: #16a34a !important;
+  color: #fff !important;
+  padding: 9px 16px !important;
+  border-radius: 10px !important;
+  border: none !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 13px !important;
+  white-space: nowrap !important;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.btn-primary:hover { background: #15803d !important; }
+.btn-primary:disabled { opacity: 0.6 !important; cursor: not-allowed !important; }
+
+/* ======================================================
+   TABLA CON SCROLL
+====================================================== */
+
+.zonas-table-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+  min-height: 0;
+}
+
+.zonas-table-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+.zonas-table-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+.zonas-table-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.zonas-table-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+.zonas-table-grid {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 520px;
+}
+
+.zonas-table-grid th {
+  padding: 12px 24px;
+  font-weight: 600;
+  color: #6b7280;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13px;
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  text-align: left;
+}
+
+.zonas-table-grid td {
+  padding: 6px 24px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  font-size: 14px;
+  color: #111827;
+  height: 52px;
+}
+
+.zonas-table-grid tbody tr:hover { background: #fafcff; }
+
+/* ── Anchos de columna ── */
+.th-code    { width: 170px; }
+.th-name    { width: 270px; }
+.th-status { width: 199px; padding-right: 32px !important; }
+
+/* ── Acciones: centrado tanto en th como en td ── */
+.th-actions {
+  width: 120px;
+  text-align: center !important;
+  padding-right: 32px !important;
+}
+
+.zonas-table-grid td.td-actions {
+  text-align: center;
+  vertical-align: middle;
+  padding-right: 32px !important;
+  padding-left: 0 !important;
+}
+
+.td-actions-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* ======================================================
+   NOMBRE — pin icono
+====================================================== */
+
+.zona-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.zona-pin-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f0faf4;
+  border: 1px solid #bbf7d0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #16a34a;
+}
+
+.zona-pin-icon svg { stroke: #16a34a; }
+
+/* ======================================================
+   BADGES
+====================================================== */
+
+.badge-active {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f0faf4;
+  color: #16a34a;
+  border: 1.5px solid #16a34a;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-inactive {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #fff0f0;
+  color: #dc2626;
+  border: 1.5px solid #dc2626;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ======================================================
+   BOTONES DE ACCIÓN
+====================================================== */
+
+.icon-btn {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 8px !important;
+  border: 1px solid #e5e7eb !important;
+  background: #ffffff !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  vertical-align: middle;
+}
+
+.icon-btn svg {
+  display: block;
+  width: 16px !important;
+  height: 16px !important;
+  stroke: #6b7280 !important;
+  fill: none !important;
+  color: #6b7280 !important;
+}
+
+.icon-btn:hover {
+  background: #f0faf4 !important;
+  border-color: #16a34a !important;
+}
+
+.icon-btn:hover svg {
+  stroke: #16a34a !important;
+  color: #16a34a !important;
+}
+
+.icon-btn.danger:hover {
+  background: #fff0f0 !important;
+  border-color: #dc2626 !important;
+}
+
+.icon-btn.danger:hover svg {
+  stroke: #dc2626 !important;
+  color: #dc2626 !important;
+}
+
+/* ======================================================
+   ESTADO VACÍO / CARGA / ERROR
+====================================================== */
+
+.zonas-empty {
+  text-align: center;
+  color: #9ca3af;
+  padding: 48px 20px;
+  font-size: 14px;
+}
+
+.configuracion-loading,
+.configuracion-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  font-size: 15px;
+  color: #6b7280;
+  padding: 40px;
+}
+
+.configuracion-error { color: #dc2626; }
+
+/* ======================================================
+   MODAL
+====================================================== */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  animation: modal-in 0.18s ease;
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.modal-title   { margin: 0; font-size: 18px; font-weight: 700; color: #111827; }
+.modal-subtitle { margin: 4px 0 0; font-size: 13px; color: #6b7280; }
+
+.modal-close-btn {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  background: transparent !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  flex-shrink: 0;
+  margin-left: 12px;
+  transition: background 0.15s ease;
+}
+
+.modal-close-btn svg {
+  display: block;
+  width: 18px !important;
+  height: 18px !important;
+  stroke: #111827 !important;
+  fill: none !important;
+  color: #111827 !important;
+}
+
+.modal-close-btn:hover { background: #f3f4f6 !important; }
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 24px 24px;
+}
+
+.field { display: flex; flex-direction: column; gap: 7px; }
+.field span { font-size: 14px; font-weight: 600; color: #374151; }
+
+.field input,
+.field select {
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #111827;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.field input::placeholder { color: #9ca3af; }
+.field input:focus,
+.field select:focus { border-color: #16a34a; }
+
+.form-error {
+  font-size: 13px;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.btn-modal-cancel {
+  padding: 11px 28px !important;
+  border-radius: 10px !important;
+  border: 1px solid #e5e7eb !important;
+  background: #fff !important;
+  color: #374151 !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: background 0.15s ease;
+}
+
+.btn-modal-cancel:hover { background: #f3f4f6 !important; }
+
+.btn-modal-submit {
+  padding: 11px 32px !important;
+  border-radius: 10px !important;
+  border: none !important;
+  background: #16a34a !important;
+  color: #fff !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: background 0.15s ease;
+}
+
+.btn-modal-submit:hover   { background: #15803d !important; }
+.btn-modal-submit:disabled { opacity: 0.6 !important; cursor: not-allowed !important; }
+
+/* ======================================================
+   RESPONSIVE
+====================================================== */
+
+@media (max-width: 1024px) {
+  .configuracion-stats { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .zonas-search { width: 200px; }
+  .zonas-card { max-height: calc(100vh - 260px); }
+}
+
+@media (max-width: 768px) {
+  .configuracion-wrapper { padding: 16px; }
+  .configuracion-stats { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .configuracion-stat-text h3 { font-size: 20px; }
+  .zonas-card-header { flex-wrap: wrap; padding: 16px; }
+  .zonas-card-actions { width: 100%; }
+  .zonas-search { width: 100%; flex: 1; }
+  .zonas-card { max-height: calc(100vh - 280px); }
+}
+
+@media (max-width: 480px) {
+  .configuracion-stats { grid-template-columns: 1fr; }
+  .th-code, .zonas-table-grid td:first-child { display: none; }
+  .zonas-card { max-height: calc(100vh - 320px); }
+}
+
+/* ======================================================
+   MODAL DETALLE DE ZONA
+====================================================== */
+
+.zdm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 900;
+  animation: zdm-fade-in 0.18s ease;
+}
+
+.zdm-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 901;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 28px 28px 24px;
+  width: calc(100% - 32px);
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+  animation: zdm-slide-up 0.22s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+.zdm-close {
+  position: absolute !important;
+  top: 14px !important;
+  right: 14px !important;
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 50% !important;
+  border: 2px solid #4abe8a !important;
+  background: transparent !important;
+  color: #4abe8a !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  transition: background 0.15s, color 0.15s;
+}
+
+.zdm-close svg { stroke: #4abe8a !important; color: #4abe8a !important; }
+.zdm-close:hover { background: #4abe8a !important; color: #fff !important; }
+.zdm-close:hover svg { stroke: #fff !important; color: #fff !important; }
+
+.zdm-header { margin-bottom: 20px; padding-right: 36px; }
+.zdm-title { font-size: 18px; font-weight: 700; color: #1a1a2e; margin: 0 0 3px; }
+.zdm-subtitle { font-size: 13px; color: #8a8fa8; margin: 0; }
+
+.zdm-name-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #f6fdf9;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.zdm-pin-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #d6f5e6;
+  color: #2fa86a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.zdm-pin-wrap svg { stroke: #2fa86a !important; color: #2fa86a !important; }
+
+.zdm-name-info { display: flex; flex-direction: column; gap: 2px; }
+.zdm-name { font-size: 16px; font-weight: 700; color: #1a1a2e; }
+.zdm-code { font-size: 13px; color: #8a8fa8; }
+
+.zdm-estado-box {
+  background: #f8f9fb;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.zdm-estado-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8a8fa8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.zdm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+  width: fit-content;
+}
+
+.zdm-badge.active  { background: #e6f9ef; color: #1e9956; border: 1.5px solid #b2edd0; }
+.zdm-badge.inactive { background: #fdeaea; color: #c0392b; border: 1.5px solid #f5c6c6; }
+
+@keyframes zdm-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes zdm-slide-up {
+  from { opacity: 0; transform: translate(-50%, -46%); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+/* ======================================================
+   FINCAS — 4 stats cards
+====================================================== */
+
+.fincas-stats-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.configuracion-stat-icon.icon-teal {
+  background: #f0fdfa;
+  border-color: #0d9488;
+  color: #0d9488;
+}
+
+/* ======================================================
+   FINCAS — barra búsqueda + filtro
+====================================================== */
+
+.fincas-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid #e8edf2;
+  flex-shrink: 0;
+}
+
+.fincas-search-input {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #6b7280;
+}
+
+.fincas-search-input input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13.5px;
+  color: #111827;
+}
+
+.fincas-search-input input::placeholder { color: #9ca3af; }
+
+.fincas-select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.fincas-select {
+  appearance: none;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 36px 10px 14px;
+  font-size: 13.5px;
+  color: #374151;
+  cursor: pointer;
+  outline: none;
+  min-width: 180px;
+}
+
+.fincas-select:focus { border-color: #16a34a; }
+
+.fincas-select-arrow {
+  position: absolute;
+  right: 12px;
+  color: #6b7280;
+  pointer-events: none;
+}
+
+/* ======================================================
+   FINCAS — estilos tabla
+====================================================== */
+
+.fincas-table th,
+.fincas-table td {
+  font-size: 13.5px;
+}
+
+.finca-codigo-badge {
+  display: inline-block;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #374151;
+  letter-spacing: 0.3px;
+}
+
+.finca-tree-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #f0faf4;
+  border: 1.5px solid #16a34a;
+  color: #16a34a;
+  flex-shrink: 0;
+}
+
+.finca-badge-activa {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f0fdf4;
+  border: 1.5px solid #16a34a;
+  color: #16a34a;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.finca-badge-inactiva {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #fef2f2;
+  border: 1.5px solid #dc2626;
+  color: #dc2626;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}

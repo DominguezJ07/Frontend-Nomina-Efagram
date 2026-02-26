@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Eye, Pencil, Trash2, Plus, Search, ChevronDown, X } from 'lucide-react';
 import NuevoRegistroModal from './NuevoRegistroModal';
 
-const BASE_URL = 'https://backend-nomina-efagram.onrender.com/api/v1';
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:5000/api/v1';
 const getToken = () => localStorage.getItem('efagram_token') ?? '';
 
 // ── Helpers ────────────────────────────────────────────────────────────────

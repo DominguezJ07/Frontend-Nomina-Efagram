@@ -12,6 +12,19 @@ import {
 
 export const AuthContext = createContext(null);
 
+// Helper: extrae el objeto user de cualquier shape que devuelva el backend
+// Soporta: { data: { id, nombre, ... } }  o  { id, nombre, ... }
+const extractUser = (response) => {
+  if (!response) return null;
+  // Shape: { success, data: { user } } - backend /auth/me devuelve data.data
+  if (response?.data?.data) return response.data.data;
+  // Shape: { success, data: { id, nombre } }
+  if (response?.data?.id || response?.data?.email) return response.data;
+  // Shape plana
+  if (response?.id || response?.email) return response;
+  return null;
+};
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,7 +33,8 @@ export function AuthProvider({ children }) {
     const init = async () => {
       try {
         if (getToken()) {
-          const userData = await meRequest();
+          const response = await meRequest();
+          const userData = extractUser(response);
           setUser(userData);
         }
       } catch {
@@ -35,11 +49,12 @@ export function AuthProvider({ children }) {
   const login = async (credentials) => {
     const data = await loginRequest(credentials);
 
+    // El backend devuelve { success, data: { user, token } }
     const token =
-      data.token ||
-      data.accessToken ||
       data?.data?.token ||
-      data?.data?.accessToken;
+      data?.token ||
+      data?.data?.accessToken ||
+      data?.accessToken;
 
     if (!token) {
       throw new Error('Token no recibido del backend');
@@ -47,7 +62,8 @@ export function AuthProvider({ children }) {
 
     setToken(token);
 
-    const userData = await meRequest();
+    const response = await meRequest();
+    const userData = extractUser(response);
     setUser(userData);
   };
 

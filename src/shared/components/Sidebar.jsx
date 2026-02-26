@@ -4,7 +4,7 @@ import {
     LayoutDashboard, BarChart3, Play, Folder,
     Users, CheckSquare, ChevronDown, Layers, Building,
     ClipboardList, AlertTriangle, Calendar, Clock,
-    Settings, MapPin
+    Settings, MapPin, Wrench  // 👈 AGREGADO , Wrench
 } from "lucide-react";
 import "./sidebar.css";
 
@@ -12,28 +12,28 @@ export default function Sidebar() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const isEjecucion     = location.pathname.startsWith("/ejecucion");
-    const isProyectos     = location.pathname.startsWith("/proyectos");
+    const isEjecucion = location.pathname.startsWith("/ejecucion");
+    const isProyectos = location.pathname.startsWith("/proyectos");
     const isConfiguracion = location.pathname.startsWith("/configuracion");
 
-    const [manualEjecucion,     setManualEjecucion]     = useState(null);
-    const [manualProyectos,     setManualProyectos]     = useState(null);
+    const [manualEjecucion, setManualEjecucion] = useState(null);
+    const [manualProyectos, setManualProyectos] = useState(null);
     const [manualConfiguracion, setManualConfiguracion] = useState(null);
-    const [openReportes,        setOpenReportes]        = useState(false);
+    const [openReportes, setOpenReportes] = useState(false);
 
     const [openUbicacion, setOpenUbicacion] = useState(
         location.pathname.startsWith("/configuracion/ubicacion")
     );
 
-    const openEjecucion     = manualEjecucion     !== null ? manualEjecucion     : isEjecucion;
-    const openProyectos     = manualProyectos     !== null ? manualProyectos     : isProyectos;
+    const openEjecucion = manualEjecucion !== null ? manualEjecucion : isEjecucion;
+    const openProyectos = manualProyectos !== null ? manualProyectos : isProyectos;
     const openConfiguracion = manualConfiguracion !== null ? manualConfiguracion : isConfiguracion;
 
-    const toggleEjecucion     = () => setManualEjecucion(!openEjecucion);
-    const toggleProyectos     = () => setManualProyectos(!openProyectos);
+    const toggleEjecucion = () => setManualEjecucion(!openEjecucion);
+    const toggleProyectos = () => setManualProyectos(!openProyectos);
     const toggleConfiguracion = () => setManualConfiguracion(!openConfiguracion);
 
-    const isActive    = (path) => location.pathname === path;
+    const isActive = (path) => location.pathname === path;
     const isActiveSub = (path) => location.pathname === path ? "submenu-active" : "";
 
     return (
@@ -139,6 +139,27 @@ export default function Sidebar() {
                             onClick={() => navigate("/configuracion/catalogo-actividades")}
                         >
                             <CheckSquare size={16} />Catálogo Actividades
+                        </div>
+
+                        <div
+                            className={`submenu-item ${isActiveSub("/configuracion/catalogo-intervenciones")}`}
+                            onClick={() => navigate("/configuracion/catalogo-intervenciones")}
+                        >
+                            <Wrench size={16} />Catálogo Intervenciones
+                        </div>
+
+                        <div
+                            className={`submenu-item ${isActiveSub("/configuracion/catalogo-procesos")}`}
+                            onClick={() => navigate("/configuracion/catalogo-procesos")}
+                        >
+                            <Layers size={16} />Catálogo Procesos
+                        </div>
+
+                        <div
+                            className={`submenu-item ${isActiveSub("/configuracion/catalogo-personal")}`}
+                            onClick={() => navigate("/configuracion/catalogo-personal")}
+                        >
+                            <Users size={16} />Catálogo Personal
                         </div>
 
                         {/* ── Ubicación ── */}
