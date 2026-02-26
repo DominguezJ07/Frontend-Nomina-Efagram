@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { createActividad, updateActividad } from "../services/actividadesService";
-import { X } from "lucide-react";
 
 // ── Constantes ────────────────────────────────────────────
 const CATEGORIAS = [
@@ -228,14 +227,16 @@ const ActividadModal = ({ isOpen, onClose, onSuccess, actividadEditar = null }) 
           </div>
           <button
             onClick={onClose}
+            title="Cerrar"
             style={{
               background: "none", border: "1px solid #e5e7eb",
               borderRadius: 7, width: 32, height: 32,
               display: "flex", alignItems: "center", justifyContent: "center",
               cursor: "pointer", flexShrink: 0,
+              fontSize: 18, color: "#6b7280", lineHeight: 1,
             }}
           >
-            <X size={15} color="#6b7280" />
+            ×
           </button>
         </div>
 

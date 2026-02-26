@@ -24,7 +24,6 @@ const CatalogoActividadesPage = () => {
   const [actividades,      setActividades]      = useState([]);
   const [loading,          setLoading]          = useState(false);
   const [busqueda,         setBusqueda]         = useState("");
-  const [filtroCategoria,  setFiltroCategoria]  = useState("Todas");
   const [filtroEstado,     setFiltroEstado]     = useState("activas");
 
   // FIX: estado para controlar el modal (abrir/cerrar + actividad a editar)
@@ -40,7 +39,6 @@ const CatalogoActividadesPage = () => {
       const params = {};
       if (filtroEstado === "activas")   params.activa = true;
       if (filtroEstado === "inactivas") params.activa = false;
-      if (filtroCategoria !== "Todas")  params.categoria = filtroCategoria;
 
       const res = await getActividades(params);
       setActividades(res?.data?.data || []);
@@ -53,20 +51,21 @@ const CatalogoActividadesPage = () => {
 
   useEffect(() => {
     cargarActividades();
-  }, [filtroEstado, filtroCategoria]);
+  }, [filtroEstado]);
 
   // =============================
   // FILTRO LOCAL (BÚSQUEDA)
   // =============================
-  const actividadesFiltradas = actividades.filter((a) =>
-    a.codigo?.toLowerCase().includes(busqueda.toLowerCase()) ||
-    a.nombre?.toLowerCase().includes(busqueda.toLowerCase())
-  );
+  const actividadesFiltradas = actividades.filter((a) => {
+    const q = busqueda.toLowerCase();
+    return (
+      a.codigo?.toLowerCase().includes(q) ||
+      a.nombre?.toLowerCase().includes(q) ||
+      a.categoria?.toLowerCase().includes(q)
+    );
+  });
 
-  const categorias = [
-    "Todas",
-    ...new Set(actividades.map((a) => a.categoria).filter(Boolean))
-  ];
+
 
   // =============================
   // ABRIR MODAL
@@ -152,21 +151,11 @@ const CatalogoActividadesPage = () => {
               <input
                 type="text"
                 className="search-input"
-                placeholder="Buscar por código o nombre..."
+                placeholder="Buscar por código, nombre o categoría..."
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
               />
             </div>
-
-            <select
-              className="filter-select"
-              value={filtroCategoria}
-              onChange={(e) => setFiltroCategoria(e.target.value)}
-            >
-              {categorias.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
 
             <select
               className="filter-select"

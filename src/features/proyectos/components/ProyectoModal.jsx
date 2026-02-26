@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createProyecto, updateProyecto, getClientes } from "../services/proyectosService";
 import { getPersonas } from "../../../personal/services/personalService";
 import ActividadesIntervencion from "./ActividadesIntervencion";
-import { Folder, Calendar, User, Tag, TrendingUp, FileText, Pencil, X } from "lucide-react";
+import { Folder, Calendar, User, Tag, TrendingUp, FileText, Pencil } from "lucide-react";
 
 // ══════════════════════════════════════════════════════════
 // HELPERS
@@ -204,8 +204,8 @@ const ProyectoModal = ({ isOpen, onClose, onSuccess, proyecto = null, modo = "cr
                 <strong style={{ color:"#475569" }}>{proyecto.codigo}</strong> · {clienteNombre}
               </p>
             </div>
-            <button onClick={onClose} style={{ background:"#f8fafc", border:"1px solid #e6e8ef", borderRadius:8, width:34, height:34, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", flexShrink:0 }}>
-              <X size={16} color="#64748b" />
+            <button onClick={onClose} title="Cerrar" style={{ background:"#f8fafc", border:"1px solid #e6e8ef", borderRadius:8, width:34, height:34, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", flexShrink:0, fontSize:18, color:"#64748b", lineHeight:1 }}>
+              ×
             </button>
           </div>
 
