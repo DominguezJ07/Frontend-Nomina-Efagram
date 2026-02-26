@@ -1,109 +1,43 @@
-.dashboard-grid {
+.dashboard-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background: #f4f6f9;
+}
+
+.sidebar {
+  width: 260px;
+  position: fixed;
+  height: 100vh;
+  left: 0;
+  top: 0;
+  z-index: 100;
+}
+
+.dashboard-main {
+  margin-left: 260px;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  height: 100vh;
+  overflow: hidden;
+  background: #f4f6f9;
+  width: calc(100vw - 260px);
 }
 
-/* ===== Cards superiores ===== */
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-}
-
-.stat-card {
-  background: #ffffff;
-  padding: 18px 20px; /* 🔥 antes era 24px */
-  border-radius: 16px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+.dashboard-header {
+  height: 70px;
+  flex-shrink: 0;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0 32px;
   display: flex;
   align-items: center;
-}
-
-.stat-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.stat-icon {
-  width: 42px;
-  height: 42px;
-  background: #e6f4ea;
-  color: #16a34a;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.stat-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-title {
-  font-size: 13px;
-  color: #6b7280;
-}
-
-.stat-number-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.stat-value {
-  font-size: 26px; /* 🔥 antes 30px */
-  font-weight: 700;
-  color: #111827;
-}
-
-.stat-change {
-  font-size: 12px;
-  font-weight: 600;
-  color: #16a34a;
-}
-
-
-/* ===== Sección inferior ===== */
-.dashboard-columns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-}
-
-.card-box {
-  background: #ffffff;
-  padding: 24px;
-  border-radius: 18px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.05);
-}
-
-.card-box h3 {
-  margin: 0 0 16px;
-}
-
-.quick-item {
-  padding: 14px 18px;
-  border-radius: 14px;
-  background: #f3f4f6;
-  margin-bottom: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  transition: 0.2s ease;
-}
-
-.quick-item:hover {
-  background: #e5e7eb;
-}
-
-
-.activity-item {
-  display: flex;
   justify-content: space-between;
-  margin-bottom: 18px;
-  font-size: 14px;
+}
+
+.dashboard-content {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
