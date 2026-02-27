@@ -4,7 +4,7 @@ import {
     LayoutDashboard, BarChart3, Play, Folder,
     Users, CheckSquare, ChevronDown, Layers, Building,
     ClipboardList, AlertTriangle, Calendar, Clock,
-    Settings, MapPin, Wrench, Package, GitBranch
+    Settings, MapPin, Wrench, GitBranch, FileText
 } from "lucide-react";
 import "./sidebar.css";
 
@@ -110,9 +110,6 @@ export default function Sidebar() {
                         <div className={`submenu-item ${isActiveSub("/proyectos")}`} onClick={() => navigate("/proyectos")}>
                             <Folder size={16} />Proyectos
                         </div>
-                        <div className={`submenu-item ${isActiveSub("/proyectos/actividades")}`} onClick={() => navigate("/proyectos/actividades")}>
-                            <Package size={16} />Actividades del Proyecto
-                        </div>
                         <div className={`submenu-item ${isActiveSub("/proyectos/subproyectos")}`} onClick={() => navigate("/proyectos/subproyectos")}>
                             <GitBranch size={16} />Subproyectos
                         </div>
@@ -120,6 +117,14 @@ export default function Sidebar() {
                 )}
 
                 <div className="menu-title">Sistema</div>
+
+                {/* ── CONTRATOS ── */}
+                <div
+                    className={`menu-item ${isActive("/contratos") ? "active" : ""}`}
+                    onClick={() => navigate("/contratos")}
+                >
+                    <FileText size={18} /><span>Contratos</span>
+                </div>
 
                 {/* ── CONFIGURACIÓN ── */}
                 <div

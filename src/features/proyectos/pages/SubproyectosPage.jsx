@@ -4,7 +4,7 @@ import DashboardLayout from '../../../app/layouts/DashboardLayout';
 import SubproyectoModal from '../components/SubproyectoModal';
 import { getSubproyectos, deleteSubproyecto } from '../services/subproyectosService';
 import { getProyectos } from '../services/proyectosService';
-import { Folder, Plus, Pencil, Trash2, Eye, MapPin, Users, Package } from 'lucide-react';
+import { Folder, Plus, Pencil, Trash2, MapPin, Users } from 'lucide-react';
 
 const ESTADO_COLOR = {
   ACTIVO:    { bg: '#f0faf4', color: '#1f8f57', border: '#1f8f57' },
@@ -16,12 +16,12 @@ const SubproyectosPage = () => {
   const [searchParams] = useSearchParams();
   const proyectoIdParam = searchParams.get('proyecto');
 
-  const [proyectos,      setProyectos]      = useState([]);
-  const [proyectoSel,    setProyectoSel]    = useState(proyectoIdParam || '');
-  const [proyectoObj,    setProyectoObj]    = useState(null);
-  const [subproyectos,   setSubproyectos]   = useState([]);
-  const [loading,        setLoading]        = useState(false);
-  const [modalState,     setModalState]     = useState({ open: false, sub: null });
+  const [proyectos,    setProyectos]    = useState([]);
+  const [proyectoSel,  setProyectoSel]  = useState(proyectoIdParam || '');
+  const [proyectoObj,  setProyectoObj]  = useState(null);
+  const [subproyectos, setSubproyectos] = useState([]);
+  const [loading,      setLoading]      = useState(false);
+  const [modalState,   setModalState]   = useState({ open: false, sub: null });
 
   // Cargar proyectos para el selector
   useEffect(() => {
@@ -34,16 +34,14 @@ const SubproyectosPage = () => {
     }).catch(console.error);
   }, [proyectoIdParam]);
 
-  // Cargar subproyectos o resetear al cambiar selección
+  // Cargar subproyectos al cambiar selección
   useEffect(() => {
     const cargar = async () => {
       if (!proyectoSel) {
-        await Promise.resolve();
         setSubproyectos([]);
         setProyectoObj(null);
         return;
       }
-      await Promise.resolve();
       setLoading(true);
       try {
         const res = await getSubproyectos({ proyecto: proyectoSel });
@@ -76,8 +74,8 @@ const SubproyectosPage = () => {
       .finally(() => setLoading(false));
   };
 
-  const activos   = subproyectos.filter(s => s.estado === 'ACTIVO').length;
-  const cerrados  = subproyectos.filter(s => s.estado === 'CERRADO').length;
+  const activos  = subproyectos.filter(s => s.estado === 'ACTIVO').length;
+  const cerrados = subproyectos.filter(s => s.estado === 'CERRADO').length;
 
   return (
     <DashboardLayout>
@@ -96,7 +94,13 @@ const SubproyectosPage = () => {
           {proyectoSel && (
             <button
               onClick={() => setModalState({ open: true, sub: null })}
-              style={{ background: '#1f8f57', color: '#fff', border: 'none', padding: '11px 20px', borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 4px 12px rgba(31,143,87,0.25)' }}
+              style={{
+                background: '#1f8f57', color: '#fff', border: 'none',
+                padding: '11px 20px', borderRadius: 12, fontWeight: 700,
+                fontSize: 14, cursor: 'pointer', display: 'flex',
+                alignItems: 'center', gap: 8,
+                boxShadow: '0 4px 12px rgba(31,143,87,0.25)',
+              }}
             >
               <Plus size={16} /> Nuevo Subproyecto
             </button>
@@ -124,20 +128,21 @@ const SubproyectosPage = () => {
           {/* Info del proyecto seleccionado */}
           {proyectoObj && (
             <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-              {[
-                { icon: Folder, label: 'Estado', value: proyectoObj.estado },
-                { icon: MapPin, label: 'Zona', value: proyectoObj.zona?.nombre ?? 'Sin zona' },
-                { icon: Users, label: 'Cliente', value: proyectoObj.cliente?.nombre ?? proyectoObj.cliente?.razon_social ?? '—' },
-              ].map(({ icon, label, value }) => {
-                const Icon = icon;
-                return (
-                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#f8fafc', border: '1px solid #e6e8ef', borderRadius: 8, padding: '5px 12px', fontSize: 13 }}>
-                  <Icon size={13} color="#64748b" />
-                  <span style={{ color: '#64748b' }}>{label}:</span>
-                  <span style={{ fontWeight: 700, color: '#0f172a' }}>{value}</span>
-                </div>
-                );
-              })}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#f8fafc', border: '1px solid #e6e8ef', borderRadius: 8, padding: '5px 12px', fontSize: 13 }}>
+                <Folder size={13} color="#64748b" />
+                <span style={{ color: '#64748b' }}>Estado:</span>
+                <span style={{ fontWeight: 700, color: '#0f172a' }}>{proyectoObj.estado}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#f8fafc', border: '1px solid #e6e8ef', borderRadius: 8, padding: '5px 12px', fontSize: 13 }}>
+                <MapPin size={13} color="#64748b" />
+                <span style={{ color: '#64748b' }}>Zona:</span>
+                <span style={{ fontWeight: 700, color: '#0f172a' }}>{proyectoObj.zona?.nombre ?? 'Sin zona'}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#f8fafc', border: '1px solid #e6e8ef', borderRadius: 8, padding: '5px 12px', fontSize: 13 }}>
+                <Users size={13} color="#64748b" />
+                <span style={{ color: '#64748b' }}>Cliente:</span>
+                <span style={{ fontWeight: 700, color: '#0f172a' }}>{proyectoObj.cliente?.nombre ?? proyectoObj.cliente?.razon_social ?? '—'}</span>
+              </div>
             </div>
           )}
         </div>
@@ -146,9 +151,9 @@ const SubproyectosPage = () => {
         {proyectoSel && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
             {[
-              { label: 'Total', value: subproyectos.length, color: '#3b82f6', bg: '#eff6ff' },
-              { label: 'Activos', value: activos, color: '#1f8f57', bg: '#f0faf4' },
-              { label: 'Cerrados', value: cerrados, color: '#64748b', bg: '#f1f5f9' },
+              { label: 'Total',    value: subproyectos.length, color: '#3b82f6', bg: '#eff6ff' },
+              { label: 'Activos',  value: activos,             color: '#1f8f57', bg: '#f0faf4' },
+              { label: 'Cerrados', value: cerrados,            color: '#64748b', bg: '#f1f5f9' },
             ].map(s => (
               <div key={s.label} style={{ background: s.bg, border: `1.5px solid ${s.color}33`, borderRadius: 12, padding: '16px 20px' }}>
                 <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: s.color, textTransform: 'uppercase', letterSpacing: '0.4px' }}>{s.label}</p>
@@ -158,7 +163,7 @@ const SubproyectosPage = () => {
           </div>
         )}
 
-        {/* ── Tabla / Cards ── */}
+        {/* ── Estado vacío ── */}
         {!proyectoSel && (
           <div style={{ textAlign: 'center', padding: '48px 20px', background: '#fff', border: '2px dashed #e2e8f0', borderRadius: 16, color: '#94a3b8' }}>
             <p style={{ margin: '0 0 6px', fontSize: 28 }}>📂</p>
@@ -177,13 +182,16 @@ const SubproyectosPage = () => {
           </div>
         )}
 
+        {/* ── Tabla ── */}
         {proyectoSel && !loading && subproyectos.length > 0 && (
           <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #e6e8ef', overflow: 'hidden' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e6e8ef' }}>
                   {['Código', 'Nombre', 'Núcleos', 'Supervisor', 'Estado', 'Acciones'].map(h => (
-                    <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.4px' }}>{h}</th>
+                    <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -192,31 +200,72 @@ const SubproyectosPage = () => {
                   const est = ESTADO_COLOR[s.estado] ?? {};
                   return (
                     <tr key={s._id} style={{ borderBottom: i < subproyectos.length - 1 ? '1px solid #f0f2f5' : 'none' }}>
-                      <td style={{ padding: '13px 16px', fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{s.codigo}</td>
-                      <td style={{ padding: '13px 16px', fontSize: 13, color: '#0f172a' }}>{s.nombre}</td>
+
+                      <td style={{ padding: '13px 16px', fontSize: 13, fontWeight: 700, color: '#0f172a' }}>
+                        {s.codigo}
+                      </td>
+
+                      <td style={{ padding: '13px 16px', fontSize: 13, color: '#0f172a' }}>
+                        {s.nombre}
+                      </td>
+
                       <td style={{ padding: '13px 16px', fontSize: 13, color: '#64748b' }}>
                         {s.nucleos?.length > 0
                           ? s.nucleos.map(n => n.nombre ?? n).join(', ')
                           : <span style={{ color: '#cbd5e1' }}>Sin núcleos</span>}
                       </td>
+
                       <td style={{ padding: '13px 16px', fontSize: 13, color: '#64748b' }}>
                         {s.supervisor
                           ? `${s.supervisor.nombres ?? ''} ${s.supervisor.apellidos ?? ''}`.trim()
                           : <span style={{ color: '#cbd5e1' }}>—</span>}
                       </td>
+
                       <td style={{ padding: '13px 16px' }}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', padding: '3px 10px', borderRadius: 999, fontSize: 12, fontWeight: 700, border: `1.5px solid ${est.border}`, background: est.bg, color: est.color }}>
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center',
+                          padding: '3px 10px', borderRadius: 999, fontSize: 12, fontWeight: 700,
+                          border: `1.5px solid ${est.border}`,
+                          background: est.bg, color: est.color,
+                        }}>
                           {s.estado}
                         </span>
                       </td>
+
+                      {/* ── Acciones ── */}
                       <td style={{ padding: '13px 16px' }}>
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          <button onClick={() => setModalState({ open: true, sub: s })} style={{ background: '#f0faf4', border: '1px solid #bbf7d0', color: '#1f8f57', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                        <div style={{ display: 'flex', gap: 8 }}>
+
+                          {/* Editar */}
+                          <button
+                            title="Editar subproyecto"
+                            onClick={() => setModalState({ open: true, sub: s })}
+                            style={{
+                              background: '#f0faf4', border: '1.5px solid #bbf7d0',
+                              color: '#1f8f57', height: 34, padding: '0 12px',
+                              borderRadius: 8, display: 'flex', alignItems: 'center',
+                              gap: 6, cursor: 'pointer', fontSize: 12, fontWeight: 700,
+                            }}
+                          >
                             <Pencil size={13} />
+                            Editar
                           </button>
-                          <button onClick={() => handleDelete(s._id)} style={{ background: '#fee2e2', border: '1px solid #fecaca', color: '#dc2626', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+
+                          {/* Eliminar */}
+                          <button
+                            title="Eliminar subproyecto"
+                            onClick={() => handleDelete(s._id)}
+                            style={{
+                              background: '#fee2e2', border: '1.5px solid #fecaca',
+                              color: '#dc2626', height: 34, padding: '0 12px',
+                              borderRadius: 8, display: 'flex', alignItems: 'center',
+                              gap: 6, cursor: 'pointer', fontSize: 12, fontWeight: 700,
+                            }}
+                          >
                             <Trash2 size={13} />
+                            Eliminar
                           </button>
+
                         </div>
                       </td>
                     </tr>
@@ -228,7 +277,7 @@ const SubproyectosPage = () => {
         )}
       </div>
 
-      {/* Modal */}
+      {/* ── Modal crear / editar ── */}
       <SubproyectoModal
         isOpen={modalState.open}
         onClose={() => setModalState({ open: false, sub: null })}

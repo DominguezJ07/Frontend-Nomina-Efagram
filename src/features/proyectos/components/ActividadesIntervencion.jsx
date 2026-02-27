@@ -3,7 +3,7 @@ import { getActividades } from "../services/actividadesService";
 import { getClientes } from "../services/Clientesservice";
 import { getPersonal } from "../services/personalService";
 import {
-  Plus, Trash2, ChevronDown, ChevronUp, User, Briefcase,
+  Plus, Trash2, ChevronDown, ChevronUp, User,
   Package, DollarSign, Hash, AlertCircle, CheckCircle2
 } from "lucide-react";
 
@@ -35,7 +35,6 @@ const IntervencionBloque = ({
   index,
   tipoKey,
   clientes,
-  personas,
   actividadesCatalogo,
   onUpdate,
   onRemove,
@@ -174,42 +173,23 @@ const IntervencionBloque = ({
       {expanded && (
         <div style={{ padding: "16px 16px 18px" }}>
 
-          {/* ── Cliente + Supervisor ── */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
-            <div>
-              <label style={labelStyle}>
-                <User size={12} /> Cliente *
-              </label>
-              <select
-                value={bloque.cliente_id || ""}
-                onChange={(e) => handleField("cliente_id", e.target.value)}
-                style={selectStyle(col)}
-              >
-                <option value="">Seleccione cliente</option>
-                {clientes.map((c) => (
-                  <option key={c._id} value={c._id}>
-                    {c.nombre || c.razon_social || c.razonSocial || "Cliente"}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label style={labelStyle}>
-                <Briefcase size={12} /> Supervisor
-              </label>
-              <select
-                value={bloque.supervisor_id || ""}
-                onChange={(e) => handleField("supervisor_id", e.target.value)}
-                style={selectStyle(col)}
-              >
-                <option value="">Sin supervisor</option>
-                {personas.map((p) => (
-                  <option key={p._id} value={p._id}>
-                    {`${p.nombres ?? ""} ${p.apellidos ?? ""}`.trim() || "Persona"}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* ── Cliente ── */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>
+              <User size={12} /> Cliente *
+            </label>
+            <select
+              value={bloque.cliente_id || ""}
+              onChange={(e) => handleField("cliente_id", e.target.value)}
+              style={selectStyle(col)}
+            >
+              <option value="">Seleccione cliente</option>
+              {clientes.map((c) => (
+                <option key={c._id} value={c._id}>
+                  {c.nombre || c.razon_social || c.razonSocial || "Cliente"}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* ── Selector de actividades del catálogo ── */}

@@ -18,5 +18,12 @@ export const endpoints = {
   actividades: {
     getAll: '/actividades',
   },
-  // ELIMINADO: precios
+  contratos: {
+    getAll:    '/contratos',
+    getOne:    (id) => `/contratos/${id}`,
+    create:    '/contratos',
+    update:    (id) => `/contratos/${id}`,
+    delete:    (id) => `/contratos/${id}`,
+    trabajadoresDisponibles: (id) => `/contratos/${id}/trabajadores-disponibles`,
+  },
 };

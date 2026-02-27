@@ -247,7 +247,6 @@ const ProyectoModal = ({
     if (!form.codigo.trim()) return alert("Código obligatorio");
     if (!form.nombre.trim()) return alert("Nombre obligatorio");
 
-    // Validar que al menos una intervención tenga cliente
     const algTieneCliente = intervenciones.some((b) => b.cliente_id);
     if (intervenciones.length > 0 && !algTieneCliente) {
       return alert("Al menos una intervención debe tener un cliente asignado");
@@ -261,13 +260,47 @@ const ProyectoModal = ({
         return alert("Debes asignar un cliente en al menos una intervención");
       }
 
+      let proyectoId;
+
       if (modoEditar) {
         await updateProyecto(proyecto._id, payload);
+        proyectoId = proyecto._id;
         alert("Proyecto actualizado correctamente");
       } else {
-        await createProyecto(payload);
+        const res = await createProyecto(payload);
+        proyectoId = res?.data?.data?._id;
         alert("Proyecto creado correctamente");
       }
+
+      // ── Sincronizar actividades al Sistema B (ActividadProyecto) ──
+      // Solo en creación, o si hay actividades nuevas en edición
+      if (proyectoId) {
+        for (const bloque of intervenciones) {
+          for (const act of bloque.actividades) {
+            if (!act.catalogo_id) continue;
+            try {
+              await import("../services/subproyectosService").then(({ createActividadProyecto }) =>
+                createActividadProyecto({
+                  proyecto:        proyectoId,
+                  actividad:       act.catalogo_id,
+                  intervencion:    bloque.tipo,
+                  cliente:         bloque.cliente_id   || undefined,
+                  supervisor:      bloque.supervisor_id || undefined,
+                  precio_unitario: Number(act.precio_unitario) || 0,
+                  cantidad_total:  Number(act.cantidad)        || 1,
+                  unidad:          act.unidad || "UNIDAD",
+                })
+              );
+            } catch (e) {
+              // Si ya existe (edición), ignorar el error de duplicado
+              if (!e?.response?.data?.message?.includes("duplicate")) {
+                console.warn("No se pudo sincronizar actividad:", act.nombre, e?.response?.data?.message);
+              }
+            }
+          }
+        }
+      }
+
       onSuccess?.();
       onClose?.();
     } catch (err) {

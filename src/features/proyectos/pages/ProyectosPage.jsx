@@ -4,7 +4,7 @@ import { getProyectos, deleteProyecto } from "../services/proyectosService";
 import "../../../assets/styles/proyectos.css";
 import ProyectoModal from "../components/ProyectoModal";
 import DashboardLayout from "../../../app/layouts/DashboardLayout";
-import { Eye, Pencil, Trash2, Folder, Package, GitBranch } from "lucide-react";
+import { Eye, Pencil, Trash2, Folder, GitBranch } from "lucide-react";
 
 // ── Helpers ──────────────────────────────────────────────
 const fmtFecha = (iso) =>
@@ -35,10 +35,10 @@ const ProyectosPage = () => {
   // modalState = { open: bool, modo: "crear"|"editar"|"ver", proyecto: obj|null }
   const [modalState, setModalState] = useState({ open:false, modo:"crear", proyecto:null });
 
-  const abrirCrear  = ()         => setModalState({ open:true, modo:"crear",  proyecto:null });
-  const abrirVer    = (p)        => setModalState({ open:true, modo:"ver",    proyecto:p });
-  const abrirEditar = (p)        => setModalState({ open:true, modo:"editar", proyecto:p });
-  const cerrarModal = ()         => setModalState(prev => ({ ...prev, open:false }));
+  const abrirCrear  = ()  => setModalState({ open:true, modo:"crear",  proyecto:null });
+  const abrirVer    = (p) => setModalState({ open:true, modo:"ver",    proyecto:p });
+  const abrirEditar = (p) => setModalState({ open:true, modo:"editar", proyecto:p });
+  const cerrarModal = ()  => setModalState(prev => ({ ...prev, open:false }));
 
   // ── Cargar proyectos ──
   const cargarProyectos = async () => {
@@ -225,17 +225,7 @@ const ProyectosPage = () => {
                   </span>
                   <div className="proy-acciones">
 
-                    {/* ✅ IR A ACTIVIDADES */}
-                    <button
-                      className="proy-btn-accion"
-                      title="Actividades del proyecto"
-                      onClick={() => navigate(`/proyectos/actividades?proyecto=${proyecto._id}`)}
-                      style={{ background: "#eff6ff", border: "1px solid #bfdbfe", color: "#1d4ed8" }}
-                    >
-                      <Package size={15} />
-                    </button>
-
-                    {/* ✅ IR A SUBPROYECTOS */}
+                    {/* IR A SUBPROYECTOS */}
                     <button
                       className="proy-btn-accion"
                       title="Subproyectos"
@@ -245,7 +235,7 @@ const ProyectosPage = () => {
                       <GitBranch size={15} />
                     </button>
 
-                    {/* ✅ VER DETALLE */}
+                    {/* VER DETALLE */}
                     <button
                       className="proy-btn-accion proy-btn-accion--view"
                       title="Ver detalle"
@@ -254,7 +244,7 @@ const ProyectosPage = () => {
                       <Eye size={16} />
                     </button>
 
-                    {/* ✅ EDITAR */}
+                    {/* EDITAR */}
                     <button
                       className="proy-btn-accion proy-btn-accion--edit"
                       title="Editar"
@@ -272,6 +262,7 @@ const ProyectosPage = () => {
                     >
                       <Trash2 size={16} />
                     </button>
+
                   </div>
                 </div>
               </div>
@@ -286,7 +277,6 @@ const ProyectosPage = () => {
           proyecto={modalState.proyecto}
           onClose={cerrarModal}
           onSuccess={(accion) => {
-            // Si desde "ver" se pulsa "Editar proyecto", cambiamos a modo editar
             if (accion === "editar") {
               setModalState(prev => ({ ...prev, modo:"editar" }));
             } else {

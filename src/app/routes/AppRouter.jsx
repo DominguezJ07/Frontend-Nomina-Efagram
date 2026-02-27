@@ -22,8 +22,10 @@ import FincasPage from '../../features/territorial/pages/FincasPage';
 
 import CatalogoIntervencionesPage from "../../features/proyectos/pages/CatalogoIntervencionesPage";
 import CatalogoProcesosPage from "../../features/proyectos/pages/CatalogoProcesosPage";
-import ActividadesProyectoPage from "../../features/proyectos/pages/ActividadesProyectoPage";
 import SubproyectosPage from "../../features/proyectos/pages/SubproyectosPage";
+
+// Contratos
+import ContratosPage from '../../features/contratos/pages/ContratosPage';
 
 export default function AppRouter() {
   return (
@@ -40,20 +42,20 @@ export default function AppRouter() {
 
       <Route path="/configuracion/catalogo-clientes" element={<PrivateRoute><ClientesPage /></PrivateRoute>} />
       <Route path="/configuracion/catalogo-actividades" element={<PrivateRoute><CatalogoActividadesPage /></PrivateRoute>} />
-      <Route path="/configuracion/catalogo-intervenciones" element={<PrivateRoute><CatalogoIntervencionesPage /></PrivateRoute>} />  {/* 👈 NUEVA LÍNEA */}
+      <Route path="/configuracion/catalogo-intervenciones" element={<PrivateRoute><CatalogoIntervencionesPage /></PrivateRoute>} />
       <Route path="/configuracion/catalogo-personal" element={<PrivateRoute><CatalogoPersonalPage /></PrivateRoute>} />
-      <Route path="/configuracion/catalogo-procesos" element={<PrivateRoute><CatalogoProcesosPage/></PrivateRoute>}/>
+      <Route path="/configuracion/catalogo-procesos" element={<PrivateRoute><CatalogoProcesosPage /></PrivateRoute>} />
       <Route path="/configuracion/ubicacion/zonas" element={<PrivateRoute><ZonasPage /></PrivateRoute>} />
       <Route path="/configuracion/ubicacion/nucleos" element={<PrivateRoute><NucleosPage /></PrivateRoute>} />
       <Route path="/configuracion/ubicacion/fincas" element={<PrivateRoute><FincasPage /></PrivateRoute>} />
-      <Route path="/proyectos/actividades" element={<PrivateRoute><ActividadesProyectoPage /></PrivateRoute>} />
       <Route path="/proyectos/subproyectos" element={<PrivateRoute><SubproyectosPage /></PrivateRoute>} />
+
+      <Route path="/contratos" element={<PrivateRoute><ContratosPage /></PrivateRoute>} />
 
       <Route path="/clientes" element={<Navigate to="/configuracion/catalogo-clientes" replace />} />
       <Route path="/catalogo-actividades" element={<Navigate to="/configuracion/catalogo-actividades" replace />} />
       <Route path="/territorial/zonas" element={<Navigate to="/configuracion/ubicacion/zonas" replace />} />
       <Route path="/territorial/nucleos" element={<Navigate to="/configuracion/ubicacion/nucleos" replace />} />
-
       <Route path="/territorial/fincas" element={<Navigate to="/configuracion/ubicacion/fincas" replace />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
