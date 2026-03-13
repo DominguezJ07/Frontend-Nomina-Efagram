@@ -26,8 +26,25 @@ export const cancelarContrato = async (id) => {
   return response.data;
 };
 
+// ── Actividades disponibles de un subproyecto para un contrato ───
+// Devuelve: [{ asignacion_id, actividad, cantidad_asignada_subproyecto,
+//              cantidad_en_contratos, cantidad_disponible, precio_unitario_referencia, unidad }]
+export const getActividadesDisponiblesSubproyecto = async (subproyectoId, excludeContratoId = null) => {
+  const params = excludeContratoId ? { excludeContratoId } : {};
+  const response = await httpClient.get(
+    `/contratos/subproyecto/${subproyectoId}/actividades-disponibles`,
+    { params }
+  );
+  return response.data;
+};
+
+// ── Subproyectos (para selector en el modal de contrato) ─────────
+export const getSubproyectos = async (params = {}) => {
+  const response = await httpClient.get('/subproyectos', { params });
+  return response.data;
+};
+
 // ── Trabajadores disponibles para un contrato ────────────────────
-// q = texto de búsqueda (cédula o nombre)
 export const getTrabajadoresDisponibles = async (contratoId, q = '') => {
   const response = await httpClient.get(
     `/contratos/${contratoId}/trabajadores-disponibles`,
@@ -44,11 +61,6 @@ export const getFincas = async () => {
 
 export const getLotesPorFinca = async (fincaId) => {
   const response = await httpClient.get('/lotes', { params: { finca: fincaId } });
-  return response.data;
-};
-
-export const getActividadesCatalogo = async () => {
-  const response = await httpClient.get('/actividades');
   return response.data;
 };
 
