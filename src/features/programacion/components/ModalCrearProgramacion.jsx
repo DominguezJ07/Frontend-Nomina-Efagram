@@ -74,12 +74,11 @@ export default function ModalCrearProgramacion({ isOpen, onClose, onSave }) {
         Array.isArray(response?.data?.data) ? response.data.data :
         Array.isArray(response)             ? response : [];
 
-      // Solo contratos ACTIVOS con actividades y lotes
-      const activos = lista.filter(c =>
-        c.estado === 'ACTIVO' &&
-        Array.isArray(c.actividades) && c.actividades.length > 0 &&
-        Array.isArray(c.lotes)       && c.lotes.length > 0
-      );
+      // Mostrar TODOS los contratos ACTIVOS
+      // El filtro estricto de actividades/lotes en frontend descartaba contratos
+      // válidos cuando el populate retornaba referencias vacías por docs eliminados.
+      // El backend valida al momento de crear → aquí solo filtramos por estado.
+      const activos = lista.filter(c => c.estado === 'ACTIVO');
       setContratos(activos);
     } catch (err) {
       setError('Error al cargar contratos: ' + getMensajeError(err));
@@ -230,7 +229,7 @@ export default function ModalCrearProgramacion({ isOpen, onClose, onSave }) {
             <label style={labelSt}>
               Contrato *{' '}
               <span style={{ color: '#94a3b8', fontWeight: 400 }}>
-                (solo activos con actividades y lotes)
+                (contratos activos)
               </span>
             </label>
             {loading ? (
@@ -242,9 +241,8 @@ export default function ModalCrearProgramacion({ isOpen, onClose, onSave }) {
                 padding: 10, color: '#dc2626', fontSize: 13,
                 background: '#fef2f2', borderRadius: 8, border: '1px solid #fecaca',
               }}>
-                ⚠️ No hay contratos ACTIVOS con actividades y lotes asignados.
-                Verifica que el contrato esté en estado ACTIVO y tenga al menos
-                1 actividad y 1 lote asignados.
+                ⚠️ No hay contratos en estado ACTIVO.
+                Verifica que el contrato esté en estado ACTIVO en el módulo de Proyectos → Contratos.
               </div>
             ) : (
               <select
@@ -257,7 +255,8 @@ export default function ModalCrearProgramacion({ isOpen, onClose, onSave }) {
                 {contratos.map(c => (
                   <option key={c._id} value={c._id}>
                     {c.codigo} · {c.finca?.nombre || 'Sin finca'}
-                    {c.cuadrilla?.nombre ? ` · ${c.cuadrilla.nombre}` : ''}
+                    {c.subproyecto?.nombre ? ` · ${c.subproyecto.nombre}` : ''}
+                    {c.cuadrillas?.length > 0 ? ` · ${c.cuadrillas[0]?.nombre || ''}` : ''}
                   </option>
                 ))}
               </select>
@@ -287,8 +286,8 @@ export default function ModalCrearProgramacion({ isOpen, onClose, onSave }) {
                 <Layers size={14} color="#64748b" style={{ marginTop: 1, flexShrink: 0 }} />
                 <div>
                   <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>Lotes: </span>
-                  {(infoContrato.lotes || []).map(l => (
-                    <span key={l._id || l} style={chipSt}>{l.nombre || l.codigo || l}</span>
+                  {(infoContrato.lotes || []).map((l, idx) => (
+                    <span key={l?._id || idx} style={chipSt}>{l?.nombre || l?.codigo || `Lote ${idx + 1}`}</span>
                   ))}
                 </div>
               </div>
@@ -296,9 +295,16 @@ export default function ModalCrearProgramacion({ isOpen, onClose, onSave }) {
                 <Wrench size={14} color="#64748b" style={{ marginTop: 1, flexShrink: 0 }} />
                 <div>
                   <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>Actividades: </span>
-                  {(infoContrato.actividades || []).map(a => (
-                    <span key={a._id || a} style={chipSt}>{a.nombre || a}</span>
-                  ))}
+                  {(infoContrato.actividades || []).map((a, idx) => {
+                    // ✅ FIX: cada elemento es { actividad:{_id,nombre,...}, cantidad, precio_unitario }
+                    // NO es la actividad directamente — hay que acceder a a.actividad
+                    const act = a?.actividad;
+                    const label = act?.nombre || act?.codigo || `Actividad ${idx + 1}`;
+                    const key = act?._id || idx;
+                    return (
+                      <span key={key} style={chipSt}>{label}</span>
+                    );
+                  })}
                 </div>
               </div>
             </div>

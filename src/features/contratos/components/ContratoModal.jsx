@@ -36,16 +36,19 @@ const nuevaCuadrillaVacia = (idx) => ({
 
 // ── Barra progreso ────────────────────────────────────────────────
 const BarraCantidad = ({ disponible, total }) => {
-  const pct   = total > 0 ? Math.min(100, Math.round(((total - disponible) / total) * 100)) : 0;
-  const color = disponible <= 0 ? '#dc2626' : disponible / total < 0.2 ? '#e67e22' : '#1f8f57';
+  const totalNum = Number(total) || 0;
+  const dispNum = Number(disponible) || 0;
+  
+  const pct   = totalNum > 0 ? Math.min(100, Math.round(((totalNum - dispNum) / totalNum) * 100)) : 0;
+  const color = dispNum <= 0 ? '#dc2626' : dispNum / totalNum < 0.2 ? '#e67e22' : '#1f8f57';
   return (
     <div style={{ marginTop: 4 }}>
       <div style={{ height: 5, background: '#e2e8f0', borderRadius: 999, overflow: 'hidden' }}>
         <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 999 }} />
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8', marginTop: 2 }}>
-        <span>Comprometido: {fmt(total - disponible)}</span>
-        <span style={{ color }}>Disponible: {fmt(disponible)}</span>
+        <span>Comprometido: {fmt(totalNum - dispNum)}</span>
+        <span style={{ color }}>Disponible: {fmt(dispNum)}</span>
       </div>
     </div>
   );
@@ -209,17 +212,24 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
 
   // ── Actividades ───────────────────────────────────────────────
   const agregarActividad = (disp) => {
+    // Asegurar que disp es un objeto válido con los campos necesarios
+    if (!disp || typeof disp !== 'object') return;
+    
     const actId = disp.actividad?._id ?? '';
-    if (actividadesSel.some(a => a.actividad_id === actId)) return;
-    setActividadesSel(prev => [...prev, {
-      asignacion_id:      disp.asignacion_id,
+    if (!actId || actividadesSel.some(a => a.actividad_id === actId)) return;
+    
+    // Crear un nuevo objeto con SOLO los campos que necesitamos
+    const nueva = {
+      asignacion_id:      disp.asignacion_id || '',
       actividad_id:       actId,
-      nombre:             disp.actividad?.nombre ?? '—',
-      unidad:             disp.unidad ?? '',
-      cantidad_disponible: disp.cantidad_disponible,
+      nombre:             disp.actividad?.nombre || '—',
+      unidad:             disp.unidad || '',
+      cantidad_disponible: Number(disp.cantidad_disponible) || 0,
       cantidad:           '',
-      precio_unitario:    String(disp.precio_unitario_referencia ?? ''),
-    }]);
+      precio_unitario:    String(disp.precio_unitario_referencia || ''),
+    };
+    
+    setActividadesSel(prev => [...prev, nueva]);
   };
   const quitarActividad = (idx) => setActividadesSel(p => p.filter((_, i) => i !== idx));
   const actualizarCampoActividad = (idx, campo, valor) =>
@@ -407,7 +417,7 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
             </InfoRow>
             <InfoRow icon={Layers}    label="Lotes">
               <div className="chips-wrap">
-                {(c.lotes ?? []).map(l => <span key={l._id??l} className="chip">{l.nombre??l.codigo??l}</span>)}
+                {(c.lotes ?? []).map((l, idx) => <span key={`lote-${l._id || idx}`} className="chip">{l.nombre??l.codigo??l}</span>)}
               </div>
             </InfoRow>
             <InfoRow icon={Wrench}    label="Actividades">
@@ -433,7 +443,7 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
                     <div key={cua._id ?? i} style={{ background:'#f8fafc', border:'1px solid #e2e8f0', borderRadius:8, padding:'8px 12px' }}>
                       <p style={{ margin:0, fontWeight:700, fontSize:13 }}>{cua.nombre} <span style={{ color:'#94a3b8', fontSize:11 }}>({cua.codigo})</span></p>
                       <div style={{ marginTop:6, display:'flex', flexWrap:'wrap', gap:4 }}>
-                        {miembros.map(p => <span key={p._id??p} className="chip">{p.nombres} {p.apellidos}</span>)}
+                        {miembros.map((p, idx) => <span key={`miembro-${p._id || idx}`} className="chip">{p.nombres} {p.apellidos}</span>)}
                       </div>
                     </div>
                   );
@@ -611,7 +621,7 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
                                   <p style={{ margin:'2px 0 4px', fontSize:12, color:'#64748b' }}>
                                     {disp.actividad?.codigo} · {disp.unidad} · Precio ref: <strong>${fmt(disp.precio_unitario_referencia)}</strong>
                                   </p>
-                                  <BarraCantidad disponible={disp.cantidad_disponible} total={disp.cantidad_asignada_subproyecto} />
+                                  <BarraCantidad disponible={disp.cantidad_disponible} total={typeof disp.cantidad_asignada_subproyecto === 'number' ? disp.cantidad_asignada_subproyecto : (disp.cantidad_asignada_subproyecto?.cantidad || 0)} />
                                 </div>
                                 <div style={{ flexShrink:0 }}>
                                   {yaAgregada

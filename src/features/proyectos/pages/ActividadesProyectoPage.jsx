@@ -344,7 +344,14 @@ const ActividadesProyectoPage = () => {
                                 border: cerrada ? "1px solid #fca5a5" : "1px solid #bbf7d0",
                               }}
                             >
-                              {cerrada ? <><Lock size={9} /> Cerrada</> : "● Abierta"}
+                              {cerrada ? (
+                                <>
+                                  <Lock size={9} />
+                                  Cerrada
+                                </>
+                              ) : (
+                                "● Abierta"
+                              )}
                             </span>
                           </td>
                           <td style={{ padding: "12px 14px" }}>
