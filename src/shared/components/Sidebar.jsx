@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import {
     LayoutDashboard, BarChart3, Play, Folder,
     Users, CheckSquare, ChevronDown, Layers, Building,
-    ClipboardList, AlertTriangle, Calendar, Clock,
+    AlertTriangle, Calendar, Clock,
     Settings, MapPin, Wrench, GitBranch, FileText, Activity
 } from "lucide-react";
 import "./sidebar.css";
@@ -16,6 +16,7 @@ export default function Sidebar() {
     const isProyectos = location.pathname.startsWith("/proyectos");
     const isProgramacion = location.pathname.startsWith("/programacion");
     const isConfiguracion = location.pathname.startsWith("/configuracion");
+    const isReportes = location.pathname.startsWith("/reportes");
 
     const [manualEjecucion, setManualEjecucion] = useState(null);
     const [manualProyectos, setManualProyectos] = useState(null);
@@ -61,13 +62,13 @@ export default function Sidebar() {
                 <div className="menu-title">Módulos</div>
 
                 {/* ── REPORTES ── */}
-                <div className="menu-item" onClick={() => setOpenReportes(!openReportes)}>
+                <div className={`menu-item ${isReportes ? "active" : ""}`} onClick={() => setOpenReportes(!openReportes)}>
                     <BarChart3 size={18} /><span>Reportes</span>
                     <ChevronDown size={16} className={`arrow ${openReportes ? "rotate" : ""}`} />
                 </div>
                 {openReportes && (
                     <div className="submenu">
-                        <div className="submenu-item">
+                        <div className={`submenu-item ${isActiveSub("/reportes")}`} onClick={() => navigate("/reportes")}>
                             <BarChart3 size={16} />Reporte General
                         </div>
                     </div>
@@ -83,9 +84,6 @@ export default function Sidebar() {
                 </div>
                 {openEjecucion && (
                     <div className="submenu">
-                        <div className={`submenu-item ${isActiveSub("/ejecucion/registros-diarios")}`} onClick={() => navigate("/ejecucion/registros-diarios")}>
-                            <ClipboardList size={16} />Registro Diario
-                        </div>
                         <div className={`submenu-item ${isActiveSub("/ejecucion/novedades")}`} onClick={() => navigate("/ejecucion/novedades")}>
                             <AlertTriangle size={16} />Novedades
                         </div>

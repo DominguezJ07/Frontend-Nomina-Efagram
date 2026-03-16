@@ -4,7 +4,6 @@ import DashboardPage from '../../features/dashboard/pages/DashboardPage';
 import PrivateRoute from './PrivateRoute';
 
 // Ejecución
-import RegistroDiarioPage from '../../features/ejecucion/pages/RegistroDiarioPage';
 import NovedadesPage from '../../features/ejecucion/pages/NovedadesPage';
 import CalendarioPage from '../../features/ejecucion/pages/CalendarioPage';
 import SemanasOperativasPage from '../../features/ejecucion/pages/SemanasOperativasPage';
@@ -30,13 +29,15 @@ import ContratosPage from '../../features/contratos/pages/ContratosPage';
 // Programación
 import ProgramacionPage from '../../features/programacion/pages/ProgramacionPage';
 
+// Reportes
+import ReportesPage from '../../features/reportes/pages/ReportesPage';
+
 export default function AppRouter() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
 
-      <Route path="/ejecucion/registros-diarios" element={<PrivateRoute><RegistroDiarioPage /></PrivateRoute>} />
       <Route path="/ejecucion/novedades" element={<PrivateRoute><NovedadesPage /></PrivateRoute>} />
       <Route path="/ejecucion/calendario" element={<PrivateRoute><CalendarioPage /></PrivateRoute>} />
       <Route path="/ejecucion/semanas-operativas" element={<PrivateRoute><SemanasOperativasPage /></PrivateRoute>} />
@@ -45,6 +46,9 @@ export default function AppRouter() {
       <Route path="/proyectos" element={<PrivateRoute><ProyectosPage /></PrivateRoute>} />
       <Route path="/proyectos/subproyectos" element={<PrivateRoute><SubproyectosPage /></PrivateRoute>} />
       <Route path="/proyectos/contratos" element={<PrivateRoute><ContratosPage /></PrivateRoute>} />
+
+      {/* ─── REPORTES ─── */}
+      <Route path="/reportes" element={<PrivateRoute><ReportesPage /></PrivateRoute>} />
 
       {/* ─── PROGRAMACIÓN ─── */}
       <Route path="/programacion" element={<PrivateRoute><ProgramacionPage /></PrivateRoute>} />
