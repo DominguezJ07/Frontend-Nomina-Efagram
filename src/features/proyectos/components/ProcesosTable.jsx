@@ -14,8 +14,8 @@ function ProcesoDetalleModal({ isOpen, proceso, onClose }) {
   } else if (typeof raw === 'number') isActive = raw === 1;
 
   return (
-    <>
-      <div className="zdm-overlay" onClick={onClose} />
+    <div style={{ position: 'fixed', inset: 0, zIndex: 900 }}>
+      <div className="zdm-overlay" style={{ pointerEvents: 'none' }} />
       <div className="zdm-panel" role="dialog" aria-modal="true">
         <button className="zdm-close" onClick={onClose} aria-label="Cerrar">
           <X size={15} />
@@ -50,7 +50,7 @@ function ProcesoDetalleModal({ isOpen, proceso, onClose }) {
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }
 

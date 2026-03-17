@@ -88,13 +88,15 @@ export default function NuevaIntervencionModal({
   };
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} />
       <form
         className="modal"
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
         role="dialog"
         aria-modal="true"
+        style={{ position: 'relative', zIndex: 1 }}
       >
         <div className="modal-header">
           <div>

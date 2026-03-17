@@ -15,7 +15,7 @@ function NucleoDetalleModal({ isOpen, nucleo, onClose }) {
 
     return (
         <>
-            <div className="zdm-overlay" onClick={onClose} />
+            <div className="zdm-overlay" />
             <div className="zdm-panel" role="dialog" aria-modal="true">
                 <button className="zdm-close" onClick={onClose} aria-label="Cerrar"><X size={15} /></button>
 

@@ -153,6 +153,7 @@ const SubproyectoModal = ({ isOpen, onClose, onSuccess, subproyecto = null, proy
       // Recargar disponibles
       const aRes = await getActividadesDisponibles(proyecto._id);
       setActDisponibles(aRes?.data?.data ?? []);
+      alert('Asignación cancelada correctamente');
     } catch (e) {
       alert(e?.response?.data?.message ?? 'Error cancelando asignación');
     }
@@ -161,39 +162,47 @@ const SubproyectoModal = ({ isOpen, onClose, onSuccess, subproyecto = null, proy
   const handleSubmit = async () => {
     if (!form.codigo.trim()) return alert('Código obligatorio');
     if (!form.nombre.trim()) return alert('Nombre obligatorio');
-
-    // Validar cantidades del borrador
-    for (const a of nuevasAsigs) {
-      const cant = Number(a.cantidad);
-      if (!cant || cant <= 0) return alert(`Ingresa una cantidad válida para "${a.nombre}"`);
-      const disponible = a.cantidad_total - a.cantidad_asignada_global;
-      if (cant > disponible) {
-        return alert(`"${a.nombre}": la cantidad (${cant}) excede lo disponible (${disponible.toFixed(2)})`);
-      }
-    }
+    if (nucleosSel.length === 0) return alert('Seleccione al menos un núcleo');
 
     try {
       setLoading(true);
-      let subId;
 
+      const payload = {
+        ...form,
+        codigo: form.codigo.trim().toUpperCase(),
+        nombre: form.nombre.trim(),
+        proyecto: proyecto._id,
+        nucleos: nucleosSel,
+      };
+
+      let subId;
       if (modoEditar) {
-        await updateSubproyecto(subproyecto._id, { ...form, nucleos: nucleosSel });
+        await updateSubproyecto(subproyecto._id, payload);
         subId = subproyecto._id;
+        alert('Subproyecto actualizado correctamente');
       } else {
-        const res = await createSubproyecto({ ...form, proyecto: proyecto._id, nucleos: nucleosSel });
-        subId = res.data.data._id;
+        const res = await createSubproyecto(payload);
+        subId = res?.data?.data?._id;
+        alert('Subproyecto creado correctamente');
       }
 
       // Guardar nuevas asignaciones
-      for (const a of nuevasAsigs) {
-        await createAsignacion({
-          subproyecto: subId,
-          actividad_proyecto: a.actividad_proyecto_id,
-          cantidad_asignada: Number(a.cantidad),
-        });
+      if (subId && nuevasAsigs.length > 0) {
+        for (const a of nuevasAsigs) {
+          const cant = parseFloat(a.cantidad);
+          if (!cant || cant <= 0) continue;
+          try {
+            await createAsignacion({
+              subproyecto: subId,
+              actividad_proyecto: a.actividad_proyecto_id,
+              cantidad_asignada: cant,
+            });
+          } catch (e) {
+            console.warn('No se pudo asignar:', a.nombre, e?.response?.data?.message);
+          }
+        }
       }
 
-      alert(modoEditar ? 'Subproyecto actualizado correctamente' : 'Subproyecto creado correctamente');
       onSuccess?.();
       onClose?.();
     } catch (e) {
@@ -210,19 +219,23 @@ const SubproyectoModal = ({ isOpen, onClose, onSuccess, subproyecto = null, proy
     no_programadas: { bg: '#eff6ff', border: '#3b82f6', color: '#1d4ed8' },
     establecimiento:{ bg: '#fff5f5', border: '#ef4444', color: '#dc2626' },
   };
-  const TIPO_EMOJI = { mantenimiento: '🔧', no_programadas: '⚡', establecimiento: '🌱' };
 
-  // Agrupar disponibles por intervención
+  const TIPO_EMOJI = {
+    mantenimiento: '🔧',
+    no_programadas: '⚡',
+    establecimiento: '🌱',
+  };
+
   const disponiblesPorIntervencion = actDisponibles.reduce((acc, a) => {
-    if (!acc[a.intervencion]) acc[a.intervencion] = [];
-    acc[a.intervencion].push(a);
+    const tipo = a.intervencion;
+    if (!acc[tipo]) acc[tipo] = [];
+    acc[tipo].push(a);
     return acc;
   }, {});
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay">
       <div
-        onClick={e => e.stopPropagation()}
         style={{
           width: 'min(760px, calc(100% - 24px))',
           background: '#fff',
@@ -236,165 +249,202 @@ const SubproyectoModal = ({ isOpen, onClose, onSuccess, subproyecto = null, proy
         }}
       >
         {/* ── Header ── */}
-        <div style={{ padding: '20px 24px 0', borderBottom: '1px solid #f0f2f5' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: '#e8f5ee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Folder size={22} color="#1f8f57" />
-              </div>
-              <div>
-                <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#0f172a' }}>
-                  {modoEditar ? '✏️ Editar Subproyecto' : '➕ Nuevo Subproyecto'}
-                </h3>
-                <p style={{ margin: 0, fontSize: 13, color: '#64748b' }}>
-                  Proyecto: <strong>{proyecto?.codigo}</strong> · {proyecto?.nombre}
-                  {proyecto?.zona?.nombre && ` · Zona: ${proyecto.zona.nombre}`}
-                </p>
-              </div>
-            </div>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#94a3b8' }}>×</button>
+        <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid #f0f2f5', display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Folder size={22} color="#3b82f6" />
           </div>
-
-          {/* Tabs */}
-          <div style={{ display: 'flex', gap: 0 }}>
-            {[
-              { key: 'info', label: '📋 Información' },
-              { key: 'actividades', label: `📦 Actividades${nuevasAsigs.length + asignaciones.length > 0 ? ` (${nuevasAsigs.length + asignaciones.filter(a => a.estado !== 'CANCELADA').length})` : ''}` },
-            ].map(tab => (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setTabActiva(tab.key)}
-                style={{
-                  padding: '10px 20px',
-                  border: 'none',
-                  borderBottom: tabActiva === tab.key ? '2.5px solid #1f8f57' : '2.5px solid transparent',
-                  background: 'none',
-                  color: tabActiva === tab.key ? '#1f8f57' : '#64748b',
-                  fontWeight: tabActiva === tab.key ? 700 : 500,
-                  cursor: 'pointer',
-                  fontSize: 14,
-                  transition: 'all 0.15s',
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
+          <div style={{ flex: 1 }}>
+            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#0f172a' }}>
+              {modoEditar ? '✏️ Editar Subproyecto' : '➕ Nuevo Subproyecto'}
+            </h3>
+            <p style={{ margin: '2px 0 0', fontSize: 13, color: '#64748b' }}>
+              Proyecto: <strong>{proyecto?.nombre}</strong> ({proyecto?.codigo})
+            </p>
+          </div>
+          <div>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#94a3b8' }}>×</button>
           </div>
         </div>
 
+        {/* ── Tabs ── */}
+        <div style={{ display: 'flex', borderBottom: '1px solid #e6e8ef' }}>
+          <button
+            onClick={() => setTabActiva('info')}
+            style={{
+              flex: 1, padding: '12px 20px', fontSize: 13, fontWeight: 700,
+              background: tabActiva === 'info' ? '#fff' : '#f8fafc',
+              color: tabActiva === 'info' ? '#1f8f57' : '#64748b',
+              border: 'none', borderBottom: tabActiva === 'info' ? '2px solid #1f8f57' : '2px solid transparent',
+              cursor: 'pointer', transition: 'all 0.2s',
+            }}
+          >
+            📋 Información General
+          </button>
+          <button
+            onClick={() => setTabActiva('actividades')}
+            disabled={!modoEditar}
+            style={{
+              flex: 1, padding: '12px 20px', fontSize: 13, fontWeight: 700,
+              background: tabActiva === 'actividades' ? '#fff' : '#f8fafc',
+              color: modoEditar ? (tabActiva === 'actividades' ? '#1f8f57' : '#64748b') : '#cbd5e1',
+              border: 'none', borderBottom: tabActiva === 'actividades' ? '2px solid #1f8f57' : '2px solid transparent',
+              cursor: modoEditar ? 'pointer' : 'not-allowed', transition: 'all 0.2s',
+            }}
+          >
+            🎯 Asignar Actividades {!modoEditar && '(guarda primero)'}
+          </button>
+        </div>
+
         {/* ── Body ── */}
-        <div style={{ padding: '20px 24px', flex: 1 }}>
+        <div style={{ flex: 1, padding: '20px 24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
           {loadData ? (
-            <div style={{ textAlign: 'center', padding: 32, color: '#64748b' }}>Cargando datos...</div>
+            <div style={{ textAlign: 'center', padding: '40px 20px', color: '#94a3b8' }}>
+              Cargando datos...
+            </div>
           ) : (
             <>
-              {/* ── TAB INFO ── */}
               {tabActiva === 'info' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <>
                   {/* Código */}
                   <div className="form-group">
                     <label>Código *</label>
                     <input
+                      type="text"
+                      name="codigo"
                       value={form.codigo}
                       onChange={e => setForm(p => ({ ...p, codigo: e.target.value }))}
                       placeholder="Ej: SUB-001"
                       style={{ textTransform: 'uppercase' }}
                       disabled={modoEditar}
                     />
+                    {modoEditar && (
+                      <p style={{ margin: '4px 0 0', fontSize: 12, color: '#94a3b8' }}>
+                        El código no puede modificarse después de la creación.
+                      </p>
+                    )}
                   </div>
 
                   {/* Nombre */}
                   <div className="form-group">
-                    <label>Nombre *</label>
+                    <label>Nombre del subproyecto *</label>
                     <input
+                      type="text"
+                      name="nombre"
                       value={form.nombre}
                       onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))}
                       placeholder="Nombre del subproyecto"
                     />
                   </div>
 
-                  {/* Supervisor + Cliente */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    <div className="form-group">
-                      <label><User size={12} style={{ marginRight: 4 }} />Supervisor</label>
-                      <select value={form.supervisor} onChange={e => setForm(p => ({ ...p, supervisor: e.target.value }))}>
-                        <option value="">Sin supervisor</option>
-                        {personas.map(p => (
-                          <option key={p._id} value={p._id}>
-                            {`${p.nombres ?? ''} ${p.apellidos ?? ''}`.trim()}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label>Cliente</label>
-                      <select value={form.cliente} onChange={e => setForm(p => ({ ...p, cliente: e.target.value }))}>
-                        <option value="">Sin cliente</option>
-                        {clientes.map(c => (
-                          <option key={c._id} value={c._id}>
-                            {c.nombre || c.razon_social || 'Cliente'}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                  {/* Cliente */}
+                  <div className="form-group">
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <User size={13} /> Cliente
+                    </label>
+                    <select
+                      name="cliente"
+                      value={form.cliente}
+                      onChange={e => setForm(p => ({ ...p, cliente: e.target.value }))}
+                    >
+                      <option value="">— Seleccione cliente (opcional) —</option>
+                      {clientes.map(c => (
+                        <option key={c._id} value={c._id}>
+                          {c.nombre ?? c.razon_social}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Supervisor */}
+                  <div className="form-group">
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <User size={13} /> Supervisor
+                    </label>
+                    <select
+                      name="supervisor"
+                      value={form.supervisor}
+                      onChange={e => setForm(p => ({ ...p, supervisor: e.target.value }))}
+                    >
+                      <option value="">— Seleccione supervisor (opcional) —</option>
+                      {personas.map(p => (
+                        <option key={p._id} value={p._id}>
+                          {`${p.nombres ?? ''} ${p.apellidos ?? ''}`.trim() || p.nombre || 'Persona'}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   {/* Fechas */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div className="modal-grid">
                     <div className="form-group">
                       <label>Fecha Inicio</label>
-                      <input type="date" value={form.fecha_inicio} onChange={e => setForm(p => ({ ...p, fecha_inicio: e.target.value }))} />
+                      <input
+                        type="date"
+                        name="fecha_inicio"
+                        value={form.fecha_inicio}
+                        onChange={e => setForm(p => ({ ...p, fecha_inicio: e.target.value }))}
+                      />
                     </div>
                     <div className="form-group">
                       <label>Fecha Fin Estimada</label>
-                      <input type="date" value={form.fecha_fin_estimada} onChange={e => setForm(p => ({ ...p, fecha_fin_estimada: e.target.value }))} />
+                      <input
+                        type="date"
+                        name="fecha_fin_estimada"
+                        value={form.fecha_fin_estimada}
+                        onChange={e => setForm(p => ({ ...p, fecha_fin_estimada: e.target.value }))}
+                      />
                     </div>
                   </div>
 
                   {/* Núcleos */}
-                  <div>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: '#475569', marginBottom: 8 }}>
-                      <MapPin size={14} /> Núcleos asignados
-                      {proyecto?.zona?.nombre && (
-                        <span style={{ fontSize: 11, background: '#f0faf4', color: '#1f8f57', padding: '2px 8px', borderRadius: 999, fontWeight: 600 }}>
-                          Zona: {proyecto.zona.nombre}
-                        </span>
-                      )}
+                  <div className="form-group">
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <MapPin size={13} /> Núcleos *
                     </label>
+                    <p style={{ margin: '0 0 8px', fontSize: 12, color: '#64748b' }}>
+                      Selecciona uno o varios núcleos donde se ejecutará este subproyecto.
+                    </p>
                     {nucleos.length === 0 ? (
-                      <div style={{ padding: '10px 14px', background: '#fef9c3', border: '1px solid #fde68a', borderRadius: 8, fontSize: 13, color: '#92400e' }}>
-                        <AlertCircle size={13} style={{ marginRight: 6 }} />
-                        No hay núcleos disponibles para esta zona.
+                      <div style={{ padding: '12px 16px', background: '#fef9c3', border: '1px solid #fde68a', borderRadius: 10, color: '#92400e', fontSize: 13 }}>
+                        <AlertCircle size={14} style={{ display: 'inline', marginRight: 6 }} />
+                        No hay núcleos disponibles. Asegúrate de que el proyecto tenga una zona asignada.
                       </div>
                     ) : (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                        {nucleos.map(n => {
-                          const sel = nucleosSel.includes(n._id);
-                          return (
-                            <button
-                              key={n._id}
-                              type="button"
-                              onClick={() => toggleNucleo(n._id)}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 }}>
+                        {nucleos.map(n => (
+                          <div
+                            key={n._id}
+                            onClick={() => toggleNucleo(n._id)}
+                            style={{
+                              padding: '10px 14px',
+                              border: `1.5px solid ${nucleosSel.includes(n._id) ? '#1f8f57' : '#e6e8ef'}`,
+                              background: nucleosSel.includes(n._id) ? '#f0faf4' : '#fff',
+                              borderRadius: 10,
+                              cursor: 'pointer',
+                              transition: 'all 0.2s',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 8,
+                            }}
+                          >
+                            <div
                               style={{
-                                padding: '6px 14px',
-                                borderRadius: 8,
-                                border: sel ? '1.5px solid #1f8f57' : '1.5px solid #e2e8f0',
-                                background: sel ? '#f0faf4' : '#f8fafc',
-                                color: sel ? '#1f8f57' : '#64748b',
-                                fontWeight: sel ? 700 : 500,
-                                fontSize: 13,
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 6,
+                                width: 16, height: 16, borderRadius: 4,
+                                border: `2px solid ${nucleosSel.includes(n._id) ? '#1f8f57' : '#cbd5e1'}`,
+                                background: nucleosSel.includes(n._id) ? '#1f8f57' : '#fff',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                flexShrink: 0,
                               }}
                             >
-                              {sel && <CheckCircle2 size={13} />}
-                              {n.nombre} <span style={{ fontSize: 11, opacity: 0.6 }}>({n.codigo})</span>
-                            </button>
-                          );
-                        })}
+                              {nucleosSel.includes(n._id) && (
+                                <CheckCircle2 size={10} color="#fff" strokeWidth={3} />
+                              )}
+                            </div>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: '#0f172a' }}>
+                              {n.nombre}
+                            </span>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -403,34 +453,33 @@ const SubproyectoModal = ({ isOpen, onClose, onSuccess, subproyecto = null, proy
                   <div className="form-group">
                     <label>Observaciones</label>
                     <textarea
+                      name="observaciones"
                       value={form.observaciones}
                       onChange={e => setForm(p => ({ ...p, observaciones: e.target.value }))}
-                      placeholder="Opcional..."
-                      rows={2}
+                      placeholder="Observaciones opcionales..."
+                      rows={3}
                     />
                   </div>
-                </div>
+                </>
               )}
 
-              {/* ── TAB ACTIVIDADES ── */}
-              {tabActiva === 'actividades' && (
+              {tabActiva === 'actividades' && modoEditar && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-
-                  {/* Asignaciones ya guardadas */}
-                  {asignaciones.filter(a => a.estado !== 'CANCELADA').length > 0 && (
+                  {/* Actividades ya asignadas */}
+                  {asignaciones.length > 0 && (
                     <div>
-                      <p style={{ margin: '0 0 10px', fontSize: 13, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                        ✅ Actividades ya asignadas
+                      <p style={{ margin: '0 0 10px', fontSize: 13, fontWeight: 700, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        ✅ Actividades asignadas
                       </p>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {asignaciones.filter(a => a.estado !== 'CANCELADA').map(a => {
-                          const ap = a.actividad_proyecto;
+                        {asignaciones.map(a => {
+                          const ap = actDisponibles.find(x => (x._id === (a.actividad_proyecto?._id ?? a.actividad_proyecto)));
                           const col = INTERVENCION_COLOR[ap?.intervencion] ?? {};
                           return (
-                            <div key={a._id} style={{ background: col.bg, border: `1.5px solid ${col.border}`, borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                              <div style={{ flex: 1 }}>
+                            <div key={a._id} style={{ background: '#fff', border: `1.5px solid ${col.border}`, borderRadius: 12, padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                              <div>
                                 <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#0f172a' }}>
-                                  {TIPO_EMOJI[ap?.intervencion]} {ap?.actividad?.nombre ?? 'Actividad'}
+                                  {TIPO_EMOJI[ap?.intervencion]} {ap?.actividad?.nombre}
                                 </p>
                                 <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748b' }}>
                                   Asignado: <strong>{a.cantidad_asignada} {ap?.actividad?.unidad_medida ?? ''}</strong>

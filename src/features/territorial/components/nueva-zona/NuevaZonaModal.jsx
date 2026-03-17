@@ -57,7 +57,7 @@ export default function NuevaZonaModal({
   };
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div className="modal-backdrop">
       <div
         className="modal"
         onClick={(e) => e.stopPropagation()}

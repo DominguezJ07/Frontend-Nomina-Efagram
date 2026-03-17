@@ -58,7 +58,7 @@ export default function NuevoNucleoModal({
   };
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div className="modal-backdrop">
       <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
 
         <div className="modal-header">

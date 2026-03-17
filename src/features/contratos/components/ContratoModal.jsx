@@ -391,7 +391,7 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
   if (esVer) {
     const c = contrato;
     return (
-      <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-overlay">
         <div className="modal-contrato" onClick={e => e.stopPropagation()}>
           <div className="modal-contrato-header">
             <h3>📋 Detalle del Contrato</h3>
@@ -462,7 +462,7 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
   ];
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay">
       <div className="modal-contrato" onClick={e => e.stopPropagation()} style={{ maxWidth: 860, width: '100%' }}>
 
         <div className="modal-contrato-header">

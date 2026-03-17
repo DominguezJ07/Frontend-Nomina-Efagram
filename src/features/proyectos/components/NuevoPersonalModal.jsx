@@ -130,13 +130,14 @@ export default function NuevoPersonalModal({
   };
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} />
       <div
         className="modal"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        style={{ maxWidth: '540px', maxHeight: '90vh', overflowY: 'auto' }}
+        style={{ position: 'relative', zIndex: 1, maxWidth: '540px', maxHeight: '90vh', overflowY: 'auto' }}
       >
         <div className="modal-header">
           <div>

@@ -32,19 +32,19 @@ const TIPOS = [
 export default function NuevaNovedadModal({
   isOpen, title = 'Nueva Novedad', initialValues = {}, onClose, onSubmit,
 }) {
-  const [fecha,               setFecha]             = useState('');
-  const [trabajador,          setTrabajador]         = useState('');
-  const [tipo,                setTipo]               = useState('PERMISO');
-  const [descripcion,         setDescripcion]        = useState('');
-  const [dias,                setDias]               = useState('');
-  const [afecta_nomina,       setAfectaNomina]       = useState(false);
+  const [fecha, setFecha] = useState('');
+  const [trabajador, setTrabajador] = useState('');
+  const [tipo, setTipo] = useState('PERMISO');
+  const [descripcion, setDescripcion] = useState('');
+  const [dias, setDias] = useState('');
+  const [afecta_nomina, setAfectaNomina] = useState(false);
   const [requiere_aprobacion, setRequiereAprobacion] = useState(false);
-  const [estado,              setEstado]             = useState('PENDIENTE');
+  const [estado, setEstado] = useState('PENDIENTE');
 
   const [trabajadores, setTrabajadores] = useState([]);
-  const [loadingData,  setLoadingData]  = useState(false);
-  const [saving,       setSaving]       = useState(false);
-  const [error,        setError]        = useState(null);
+  const [loadingData, setLoadingData] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -73,8 +73,8 @@ export default function NuevaNovedadModal({
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-    if (!fecha)              return setError('La fecha es obligatoria');
-    if (!trabajador)         return setError('El trabajador es obligatorio');
+    if (!fecha) return setError('La fecha es obligatoria');
+    if (!trabajador) return setError('El trabajador es obligatorio');
     if (!descripcion.trim()) return setError('La descripción es obligatoria');
 
     const payload = {
@@ -100,8 +100,8 @@ export default function NuevaNovedadModal({
   const busy = saving || loadingData;
 
   return (
-    <div className="nrm-backdrop" onClick={onClose}>
-      <div className="nrm-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+    <div className="nrm-backdrop">
+      <div className="nrm-modal" role="dialog" aria-modal="true">
 
         <div className="nrm-header">
           <div>

@@ -4,16 +4,16 @@ import { X } from 'lucide-react';
 export default function NuevaSemanaModal({
   isOpen, title = 'Nueva Semana', initialValues = {}, onClose, onSubmit,
 }) {
-  const [codigo,        setCodigo]        = useState('');
-  const [fecha_inicio,  setFechaInicio]   = useState('');
-  const [fecha_fin,     setFechaFin]      = useState('');
+  const [codigo, setCodigo] = useState('');
+  const [fecha_inicio, setFechaInicio] = useState('');
+  const [fecha_fin, setFechaFin] = useState('');
   // CORRECCIÓN: estado inicial era 'ACTIVA' — el enum del backend es ABIERTA | CERRADA | BLOQUEADA
-  const [estado,        setEstado]        = useState('ABIERTA');
-  const [registros,     setRegistros]     = useState('');
-  const [cumplimiento,  setCumplimiento]  = useState('');
+  const [estado, setEstado] = useState('ABIERTA');
+  const [registros, setRegistros] = useState('');
+  const [cumplimiento, setCumplimiento] = useState('');
   const [observaciones, setObservaciones] = useState('');
-  const [saving,        setSaving]        = useState(false);
-  const [error,         setError]         = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -37,14 +37,14 @@ export default function NuevaSemanaModal({
     e.preventDefault();
     setError(null);
     if (!fecha_inicio) return setError('La fecha de inicio es obligatoria');
-    if (!fecha_fin)    return setError('La fecha de fin es obligatoria');
+    if (!fecha_fin) return setError('La fecha de fin es obligatoria');
 
     const payload = {
       ...(codigo.trim() && { codigo: codigo.trim() }),
       fecha_inicio,
       fecha_fin,
       estado,
-      ...(registros    && { registros: Number(registros) }),
+      ...(registros && { registros: Number(registros) }),
       ...(cumplimiento && { cumplimiento: Number(cumplimiento) }),
       ...(observaciones.trim() && { observaciones: observaciones.trim() }),
     };
@@ -57,11 +57,10 @@ export default function NuevaSemanaModal({
       setSaving(false);
     }
   };
-
+  
   return (
-    <div className="nrm-backdrop" onClick={onClose}>
-      <div className="nrm-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-
+    <div className="nrm-backdrop">
+      <div className="nrm-modal" role="dialog" aria-modal="true">
         <div className="nrm-header">
           <div>
             <h3 className="nrm-title">{title}</h3>

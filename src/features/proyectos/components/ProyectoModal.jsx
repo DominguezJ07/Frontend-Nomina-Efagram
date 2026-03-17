@@ -324,18 +324,17 @@ const ProyectoModal = ({
       : "—";
 
     return (
-      <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-overlay">
         <div
-          onClick={(e) => e.stopPropagation()}
           style={{
             width: "min(680px, calc(100% - 24px))",
             background: "#fff",
             border: "1px solid #e6e8ef",
             borderRadius: 18,
             boxShadow: "0 24px 64px rgba(15,23,42,0.22)",
-            maxHeight: "90vh", // 🔴 CLAVE: Límite de altura
-            display: "flex", // 🔴 CLAVE: Flex layout
-            flexDirection: "column", // 🔴 CLAVE: Columna
+            maxHeight: "90vh",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           {/* HEADER - FIJO */}
@@ -346,7 +345,7 @@ const ProyectoModal = ({
               display: "flex",
               alignItems: "flex-start",
               gap: 14,
-              flexShrink: 0, // 🔴 NO SE COMPRIME
+              flexShrink: 0,
             }}
           >
             <div
@@ -393,8 +392,8 @@ const ProyectoModal = ({
           {/* BODY - CON SCROLL */}
           <div
             style={{
-              flex: 1, // 🔴 CLAVE: Toma espacio disponible
-              overflowY: "auto", // 🔴 CLAVE: SCROLL AQUÍ
+              flex: 1,
+              overflowY: "auto",
               overflowX: "hidden",
               padding: "20px 24px",
               display: "flex",
@@ -579,7 +578,7 @@ const ProyectoModal = ({
               display: "flex",
               justifyContent: "flex-end",
               gap: 10,
-              flexShrink: 0, // 🔴 NO SE COMPRIME
+              flexShrink: 0,
             }}
           >
             <button
@@ -614,14 +613,13 @@ const ProyectoModal = ({
   // MODO CREAR / EDITAR - CON SCROLL ARREGLADO
   // ══════════════════════════════════════════════════════
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay">
       <div
         className="modal modal-proyecto"
-        onClick={(e) => e.stopPropagation()}
         style={{
-          maxHeight: "90vh", // 🔴 CLAVE
-          display: "flex", // 🔴 CLAVE
-          flexDirection: "column", // 🔴 CLAVE
+          maxHeight: "90vh",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
 
@@ -630,7 +628,7 @@ const ProyectoModal = ({
           style={{
             display: "flex", alignItems: "center",
             justifyContent: "space-between", marginBottom: 20,
-            flexShrink: 0, // 🔴 NO SE COMPRIME
+            flexShrink: 0,
           }}
         >
           <div>
@@ -657,8 +655,8 @@ const ProyectoModal = ({
         {/* BODY - CON SCROLL */}
         <div
           style={{
-            flex: 1, // 🔴 CLAVE: Toma espacio
-            overflowY: "auto", // 🔴 CLAVE: SCROLL AQUÍ
+            flex: 1,
+            overflowY: "auto",
             overflowX: "hidden",
           }}
         >
@@ -809,7 +807,7 @@ const ProyectoModal = ({
         <div
           className="modal-buttons"
           style={{
-            flexShrink: 0, // 🔴 NO SE COMPRIME
+            flexShrink: 0,
             marginTop: 20,
           }}
         >
