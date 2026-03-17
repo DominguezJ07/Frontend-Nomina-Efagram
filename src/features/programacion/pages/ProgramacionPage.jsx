@@ -136,7 +136,7 @@ export default function ProgramacionPage() {
       throw new Error(response?.message || 'No se pudo crear la programación');
     }
     setShowModalCrear(false);
-    setSuccess('✅ Programación creada exitosamente — revisa MongoDB, la colección ya aparece');
+    setSuccess('Programación creada exitosamente');
     setTimeout(() => setSuccess(null), 4000);
     await cargarProgramaciones();
   };
@@ -158,7 +158,7 @@ export default function ProgramacionPage() {
     try {
       await programacionService.delete(id);
       setProgramaciones(prev => prev.filter(p => p._id !== id));
-      setSuccess('✅ Programación eliminada');
+      setSuccess('Programación eliminada');
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       setError(err?.message || 'Error al eliminar');
@@ -206,10 +206,17 @@ export default function ProgramacionPage() {
           </div>
         )}
         {success && (
-          <div className="alert alert-success">
-            <CheckCircle size={20} />
-            <span>{success}</span>
-            <button onClick={() => setSuccess(null)}>&times;</button>
+          <div style={{
+            position: 'fixed', bottom: 24, right: 24, zIndex: 9999,
+            background: '#1f8f57', color: '#fff',
+            padding: '12px 18px', borderRadius: 10,
+            fontSize: 13, fontWeight: 600,
+            boxShadow: '0 6px 24px rgba(31,143,87,0.35)',
+            display: 'flex', alignItems: 'center', gap: 8,
+            animation: 'fadeInUp 0.25s ease',
+          }}>
+            <CheckCircle size={16} />
+            {success}
           </div>
         )}
 

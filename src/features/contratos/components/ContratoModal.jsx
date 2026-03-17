@@ -6,7 +6,6 @@ import {
 } from 'lucide-react';
 import {
   getFincas,
-  getLotesPorFinca,
   getSubproyectos,
   getActividadesDisponiblesSubproyecto,
   createContrato,
@@ -26,7 +25,7 @@ const fmt = (n) => Number(n).toLocaleString('es-CO', { minimumFractionDigits: 2,
 
 // ── Cuadrilla vacía base ──────────────────────────────────────────
 const nuevaCuadrillaVacia = (idx) => ({
-  _key:      Date.now() + idx,   // clave única para React
+  _key:      Date.now() + idx,
   nombre:    '',
   codigo:    '',
   supervisor: null,
@@ -36,16 +35,18 @@ const nuevaCuadrillaVacia = (idx) => ({
 
 // ── Barra progreso ────────────────────────────────────────────────
 const BarraCantidad = ({ disponible, total }) => {
-  const pct   = total > 0 ? Math.min(100, Math.round(((total - disponible) / total) * 100)) : 0;
-  const color = disponible <= 0 ? '#dc2626' : disponible / total < 0.2 ? '#e67e22' : '#1f8f57';
+  const totalNum = Number(total) || 0;
+  const dispNum = Number(disponible) || 0;
+  const pct   = totalNum > 0 ? Math.min(100, Math.round(((totalNum - dispNum) / totalNum) * 100)) : 0;
+  const color = dispNum <= 0 ? '#dc2626' : dispNum / totalNum < 0.2 ? '#e67e22' : '#1f8f57';
   return (
     <div style={{ marginTop: 4 }}>
       <div style={{ height: 5, background: '#e2e8f0', borderRadius: 999, overflow: 'hidden' }}>
         <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 999 }} />
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8', marginTop: 2 }}>
-        <span>Comprometido: {fmt(total - disponible)}</span>
-        <span style={{ color }}>Disponible: {fmt(disponible)}</span>
+        <span>Comprometido: {fmt(totalNum - dispNum)}</span>
+        <span style={{ color }}>Disponible: {fmt(dispNum)}</span>
       </div>
     </div>
   );
@@ -68,11 +69,10 @@ const InfoRow = ({ icon, label, children }) => {
 export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = null, modo = 'crear' }) {
 
   const [fincas,       setFincas]       = useState([]);
-  const [lotes,        setLotes]        = useState([]);
   const [subproyectos, setSubproyectos] = useState([]);
 
   const [form, setForm] = useState({
-    codigo: '', subproyecto: '', finca: '', lotes: [],
+    codigo: '', subproyecto: '', finca: '',
     fecha_inicio: '', fecha_fin: '', observaciones: '', estado: 'ACTIVO',
   });
 
@@ -80,7 +80,11 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
   const [loadingActividades,     setLoadingActividades]     = useState(false);
   const [actividadesSel,         setActividadesSel]         = useState([]);
 
-  // ── Lista de cuadrillas a crear: array de objetos cuadrilla ──
+  // ✅ NUEVO: lotes embebidos del contrato
+  const [lotes,     setLotes]     = useState([]);
+  const [nuevoLote, setNuevoLote] = useState('');
+
+  // ── Lista de cuadrillas a crear ──
   const [cuadrillas, setCuadrillas] = useState([nuevaCuadrillaVacia(0)]);
 
   // ── Cuadrillas existentes (modo editar) ──
@@ -90,7 +94,6 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
   const [todasPersonas,   setTodasPersonas]   = useState([]);
   const [loadingPersonas, setLoadingPersonas] = useState(false);
 
-  // ── Buscador por cuadrilla (un estado de búsqueda por índice) ──
   const [busquedas, setBusquedas] = useState({});
 
   const [saving, setSaving] = useState(false);
@@ -135,12 +138,18 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
         codigo:        contrato.codigo ?? '',
         subproyecto:   subId,
         finca:         fincaId,
-        lotes:         (contrato.lotes ?? []).map(l => l._id ?? l),
         fecha_inicio:  toDateInput(contrato.fecha_inicio),
         fecha_fin:     toDateInput(contrato.fecha_fin),
         observaciones: contrato.observaciones ?? '',
         estado:        contrato.estado ?? 'ACTIVO',
       });
+
+      // ✅ Cargar lotes embebidos existentes
+      setLotes(
+        Array.isArray(contrato.lotes)
+          ? contrato.lotes.map((l) => ({ nombre: l.nombre, _id: l._id }))
+          : []
+      );
 
       setActividadesSel((contrato.actividades ?? []).map(a => ({
         asignacion_id:      a.asignacion_subproyecto?._id ?? a.asignacion_subproyecto ?? null,
@@ -154,8 +163,7 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
 
       setCuadrillasExistentes(contrato.cuadrillas ?? []);
 
-      if (fincaId) fetchLotes(fincaId);
-      if (subId)   cargarActividadesDisponibles(subId, contrato._id ?? contrato.id);
+      if (subId) cargarActividadesDisponibles(subId, contrato._id ?? contrato.id);
     } else {
       resetForm();
     }
@@ -163,9 +171,10 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
   }, [isOpen, contrato, modo]);
 
   const resetForm = () => {
-    setForm({ codigo:'', subproyecto:'', finca:'', lotes:[],
+    setForm({ codigo:'', subproyecto:'', finca:'',
               fecha_inicio:'', fecha_fin:'', observaciones:'', estado:'ACTIVO' });
     setLotes([]);
+    setNuevoLote('');
     setActividadesDisponibles([]);
     setActividadesSel([]);
     setCuadrillas([nuevaCuadrillaVacia(0)]);
@@ -175,21 +184,6 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
     setError(null);
     setTab('datos');
   };
-
-  const fetchLotes = useCallback(async (fincaId) => {
-    if (!fincaId) { setLotes([]); return; }
-    try {
-      const res = await getLotesPorFinca(fincaId);
-      setLotes(normalizeList(res).filter(l => l.activo));
-    } catch (e) { console.error(e); }
-  }, []);
-
-  const handleFincaChange = (fincaId) => {
-    setForm(p => ({ ...p, finca: fincaId, lotes: [] }));
-    fetchLotes(fincaId);
-  };
-  const toggleLote = (id) =>
-    setForm(p => ({ ...p, lotes: p.lotes.includes(id) ? p.lotes.filter(l => l !== id) : [...p.lotes, id] }));
 
   const cargarActividadesDisponibles = async (subId, excludeId = null) => {
     if (!subId) { setActividadesDisponibles([]); return; }
@@ -207,19 +201,42 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
     cargarActividadesDisponibles(subId, contrato?._id ?? contrato?.id ?? null);
   };
 
+  // ✅ NUEVO: agregar lote a la lista
+  const handleAgregarLote = () => {
+    const nombre = nuevoLote.trim();
+    if (!nombre) return;
+    setLotes((prev) => [...prev, { nombre }]);
+    setNuevoLote('');
+  };
+
+  // ✅ NUEVO: eliminar lote por índice
+  const handleEliminarLote = (idx) => {
+    setLotes((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  // ✅ NUEVO: agregar lote con Enter
+  const handleLoteKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAgregarLote();
+    }
+  };
+
   // ── Actividades ───────────────────────────────────────────────
   const agregarActividad = (disp) => {
+    if (!disp || typeof disp !== 'object') return;
     const actId = disp.actividad?._id ?? '';
-    if (actividadesSel.some(a => a.actividad_id === actId)) return;
-    setActividadesSel(prev => [...prev, {
-      asignacion_id:      disp.asignacion_id,
+    if (!actId || actividadesSel.some(a => a.actividad_id === actId)) return;
+    const nueva = {
+      asignacion_id:      disp.asignacion_id || '',
       actividad_id:       actId,
-      nombre:             disp.actividad?.nombre ?? '—',
-      unidad:             disp.unidad ?? '',
-      cantidad_disponible: disp.cantidad_disponible,
+      nombre:             disp.actividad?.nombre || '—',
+      unidad:             disp.unidad || '',
+      cantidad_disponible: Number(disp.cantidad_disponible) || 0,
       cantidad:           '',
-      precio_unitario:    String(disp.precio_unitario_referencia ?? ''),
-    }]);
+      precio_unitario:    String(disp.precio_unitario_referencia || ''),
+    };
+    setActividadesSel(prev => [...prev, nueva]);
   };
   const quitarActividad = (idx) => setActividadesSel(p => p.filter((_, i) => i !== idx));
   const actualizarCampoActividad = (idx, campo, valor) =>
@@ -239,7 +256,7 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
     setCuadrillas(prev => [...prev, nuevaCuadrillaVacia(prev.length)]);
 
   const eliminarCuadrilla = (idx) => {
-    if (cuadrillas.length === 1) return; // mínimo 1
+    if (cuadrillas.length === 1) return;
     setCuadrillas(prev => prev.filter((_, i) => i !== idx));
   };
 
@@ -250,12 +267,7 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
     const pid = persona._id ?? persona.id;
     setCuadrillas(prev => prev.map((c, i) => {
       if (i !== cuadrillaIdx) return c;
-      return {
-        ...c,
-        supervisor: persona,
-        // Quitarlo de miembros si ya estaba
-        miembros: c.miembros.filter(m => (m._id ?? m.id) !== pid),
-      };
+      return { ...c, supervisor: persona, miembros: c.miembros.filter(m => (m._id ?? m.id) !== pid) };
     }));
   };
 
@@ -276,8 +288,6 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
       i !== cuadrillaIdx ? c : { ...c, miembros: c.miembros.filter(m => (m._id ?? m.id) !== pid) }
     ));
 
-  // Personas disponibles para una cuadrilla específica
-  // (excluye supervisor y miembros de TODAS las cuadrillas para evitar duplicados)
   const getPersonasDisponibles = (cuadrillaIdx) => {
     const busqueda = (busquedas[cuadrillaIdx] ?? '').trim().toLowerCase();
     const todosOcupados = new Set();
@@ -285,7 +295,6 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
       if (c.supervisor) todosOcupados.add(c.supervisor._id ?? c.supervisor.id);
       c.miembros.forEach(m => todosOcupados.add(m._id ?? m.id));
     });
-
     return todasPersonas.filter(p => {
       const pid = p._id ?? p.id;
       if (todosOcupados.has(pid)) return false;
@@ -303,7 +312,7 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
     if (!form.codigo.trim())         return setError('El código del contrato es obligatorio');
     if (!form.subproyecto)           return setError('Selecciona un subproyecto');
     if (!form.finca)                 return setError('Selecciona una finca');
-    if (form.lotes.length === 0)     return setError('Selecciona al menos un lote');
+    if (lotes.length === 0)          return setError('Agrega al menos un lote'); // ✅
     if (actividadesSel.length === 0) return setError('Agrega al menos una actividad');
     if (!form.fecha_inicio)          return setError('La fecha de inicio es obligatoria');
 
@@ -314,7 +323,6 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
       if (a.precio_unitario === '' || Number(a.precio_unitario) < 0) return setError(`Ingresa un precio válido para "${a.nombre}"`);
     }
 
-    // Validar cuadrillas solo en crear
     let cuadrillaIds = (contrato?.cuadrillas ?? []).map(c => c._id ?? c);
 
     if (modo === 'crear') {
@@ -328,7 +336,6 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
 
       try {
         setSaving(true);
-        // Crear todas las cuadrillas en paralelo
         const resultados = await Promise.all(
           cuadrillas.map(c =>
             httpClient.post('/cuadrillas', {
@@ -340,7 +347,6 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
           )
         );
         cuadrillaIds = resultados.map(r => r?.data?.data?._id ?? r?.data?._id);
-
         if (cuadrillaIds.some(id => !id)) throw new Error('No se pudo obtener el ID de una cuadrilla creada');
       } catch (e) {
         setError(e?.response?.data?.message ?? e?.message ?? 'Error al crear las cuadrillas');
@@ -354,7 +360,7 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
         codigo:       form.codigo.trim().toUpperCase(),
         subproyecto:  form.subproyecto,
         finca:        form.finca,
-        lotes:        form.lotes,
+        lotes:        lotes.map((l) => ({ nombre: l.nombre })), // ✅ solo nombre, el backend genera el código
         actividades:  actividadesSel.map(a => ({
           actividad:       a.actividad_id,
           cantidad:        Number(a.cantidad),
@@ -390,6 +396,7 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
   // ══ MODO VER ══════════════════════════════════════════════════
   if (esVer) {
     const c = contrato;
+    const lotesContrato = Array.isArray(c.lotes) ? c.lotes : [];
     return (
       <div className="modal-overlay">
         <div className="modal-contrato" onClick={e => e.stopPropagation()}>
@@ -402,15 +409,35 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
             <InfoRow icon={GitBranch} label="Subproyecto">
               {c.subproyecto?.nombre ?? '—'} <span style={{ color:'#94a3b8', fontSize:12 }}>({c.subproyecto?.codigo})</span>
             </InfoRow>
-            <InfoRow icon={MapPin}    label="Finca">
+            <InfoRow icon={MapPin} label="Finca">
               {c.finca?.nombre ?? '—'} <span style={{ color:'#94a3b8', fontSize:12 }}>({c.finca?.codigo})</span>
             </InfoRow>
-            <InfoRow icon={Layers}    label="Lotes">
-              <div className="chips-wrap">
-                {(c.lotes ?? []).map(l => <span key={l._id??l} className="chip">{l.nombre??l.codigo??l}</span>)}
-              </div>
+
+            {/* ✅ NUEVO: Lotes embebidos en modo ver */}
+            <InfoRow icon={Layers} label={`Lotes (${lotesContrato.length})`}>
+              {lotesContrato.length === 0 ? (
+                <span style={{ color: '#94a3b8', fontSize: 13 }}>Sin lotes registrados</span>
+              ) : (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                  {lotesContrato.map((l) => (
+                    <span
+                      key={l._id ?? l.codigo}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 5,
+                        padding: '4px 10px', borderRadius: 8,
+                        background: '#f0faf4', border: '1px solid rgba(31,143,87,0.25)',
+                        fontSize: 12, fontWeight: 600, color: '#1f8f57',
+                      }}
+                    >
+                      <span style={{ color: '#94a3b8', fontWeight: 500 }}>#{l.codigo}</span>
+                      {l.nombre}
+                    </span>
+                  ))}
+                </div>
+              )}
             </InfoRow>
-            <InfoRow icon={Wrench}    label="Actividades">
+
+            <InfoRow icon={Wrench} label="Actividades">
               <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
                 {(c.actividades ?? []).map((a, i) => (
                   <div key={i} style={{ background:'#f8fafc', border:'1px solid #e2e8f0', borderRadius:8, padding:'8px 12px' }}>
@@ -425,7 +452,7 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
                 </p>
               </div>
             </InfoRow>
-            <InfoRow icon={Users}     label={`Cuadrillas (${(c.cuadrillas??[]).length})`}>
+            <InfoRow icon={Users} label={`Cuadrillas (${(c.cuadrillas??[]).length})`}>
               <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
                 {(c.cuadrillas ?? []).map((cua, i) => {
                   const miembros = (cua.miembros ?? []).filter(m => m.activo).map(m => m.persona ?? m);
@@ -433,14 +460,14 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
                     <div key={cua._id ?? i} style={{ background:'#f8fafc', border:'1px solid #e2e8f0', borderRadius:8, padding:'8px 12px' }}>
                       <p style={{ margin:0, fontWeight:700, fontSize:13 }}>{cua.nombre} <span style={{ color:'#94a3b8', fontSize:11 }}>({cua.codigo})</span></p>
                       <div style={{ marginTop:6, display:'flex', flexWrap:'wrap', gap:4 }}>
-                        {miembros.map(p => <span key={p._id??p} className="chip">{p.nombres} {p.apellidos}</span>)}
+                        {miembros.map((p, idx) => <span key={`miembro-${p._id || idx}`} className="chip">{p.nombres} {p.apellidos}</span>)}
                       </div>
                     </div>
                   );
                 })}
               </div>
             </InfoRow>
-            <InfoRow icon={Calendar}  label="Vigencia">
+            <InfoRow icon={Calendar} label="Vigencia">
               {c.fecha_inicio ? new Date(c.fecha_inicio).toLocaleDateString('es-CO') : '—'}
               {c.fecha_fin ? ` → ${new Date(c.fecha_fin).toLocaleDateString('es-CO')}` : ''}
             </InfoRow>
@@ -534,33 +561,101 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
                 <p className="form-section-title">📍 Ubicación</p>
                 <div className="form-field">
                   <label>Finca *</label>
-                  <select value={form.finca} onChange={e => handleFincaChange(e.target.value)}>
+                  <select value={form.finca} onChange={e => setForm(p => ({ ...p, finca: e.target.value }))}>
                     <option value="">— Selecciona una finca —</option>
                     {fincas.map(f => <option key={f._id??f.id} value={f._id??f.id}>{f.nombre} ({f.codigo})</option>)}
                   </select>
                 </div>
-                {form.finca && (
-                  <div className="form-field" style={{ marginTop:12 }}>
-                    <label>Lotes * — {form.lotes.length} seleccionado(s)</label>
-                    {lotes.length === 0
-                      ? <p style={{ margin:0, fontSize:13, color:'#94a3b8' }}>Sin lotes activos.</p>
-                      : (
-                        <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
-                          {lotes.map(l => {
-                            const lid = l._id??l.id;
-                            const sel = form.lotes.includes(lid);
-                            return (
-                              <label key={lid} className={`actividad-checkbox ${sel ? 'selected' : ''}`} style={{ minWidth:'unset', padding:'7px 12px' }}>
-                                <input type="checkbox" checked={sel} onChange={() => toggleLote(lid)} />
-                                <span className="act-nombre">{l.nombre} <span className="act-cat">({l.codigo})</span></span>
-                              </label>
-                            );
-                          })}
-                        </div>
-                      )
-                    }
+
+                {/* ✅ NUEVO: Sección de lotes embebidos */}
+                <div className="form-field" style={{ marginTop: 16 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Layers size={13} /> Lotes * — {lotes.length} definido(s)
+                  </label>
+
+                  {/* Input + botón agregar */}
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <input
+                      value={nuevoLote}
+                      onChange={(e) => setNuevoLote(e.target.value)}
+                      onKeyDown={handleLoteKeyDown}
+                      placeholder="Nombre del lote, ej: Lote Norte"
+                      style={{ flex: 1 }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAgregarLote}
+                      disabled={!nuevoLote.trim()}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 6,
+                        padding: '0 16px', borderRadius: 8, border: 'none',
+                        background: nuevoLote.trim() ? '#1f8f57' : '#e2e8f0',
+                        color: nuevoLote.trim() ? '#fff' : '#94a3b8',
+                        fontWeight: 700, fontSize: 13,
+                        cursor: nuevoLote.trim() ? 'pointer' : 'not-allowed',
+                        whiteSpace: 'nowrap', height: 38,
+                      }}
+                    >
+                      <Plus size={15} /> Agregar
+                    </button>
                   </div>
-                )}
+
+                  <p style={{ margin: '4px 0 8px', fontSize: 12, color: '#94a3b8' }}>
+                    Presiona Enter o el botón para agregar. El código se genera automáticamente.
+                  </p>
+
+                  {/* Lista de lotes agregados */}
+                  {lotes.length > 0 && (
+                    <div
+                      style={{
+                        display: 'flex', flexDirection: 'column', gap: 6,
+                        padding: '10px 12px',
+                        background: '#f8fafc', borderRadius: 10,
+                        border: '1px solid #e6e8ef',
+                      }}
+                    >
+                      {lotes.map((lote, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            padding: '8px 10px', borderRadius: 8,
+                            background: '#fff', border: '1px solid #e6e8ef',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span
+                              style={{
+                                width: 24, height: 24, borderRadius: 6,
+                                background: '#e8f5ee', color: '#1f8f57',
+                                fontSize: 11, fontWeight: 800,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                flexShrink: 0,
+                              }}
+                            >
+                              {idx + 1}
+                            </span>
+                            <span style={{ fontSize: 14, color: '#0f172a', fontWeight: 500 }}>
+                              {lote.nombre}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleEliminarLote(idx)}
+                            style={{
+                              background: 'none', border: 'none', cursor: 'pointer',
+                              color: '#ef4444', padding: '4px',
+                              display: 'flex', alignItems: 'center', borderRadius: 6,
+                            }}
+                            title="Eliminar lote"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="form-section">
@@ -611,7 +706,7 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
                                   <p style={{ margin:'2px 0 4px', fontSize:12, color:'#64748b' }}>
                                     {disp.actividad?.codigo} · {disp.unidad} · Precio ref: <strong>${fmt(disp.precio_unitario_referencia)}</strong>
                                   </p>
-                                  <BarraCantidad disponible={disp.cantidad_disponible} total={disp.cantidad_asignada_subproyecto} />
+                                  <BarraCantidad disponible={disp.cantidad_disponible} total={typeof disp.cantidad_asignada_subproyecto === 'number' ? disp.cantidad_asignada_subproyecto : (disp.cantidad_asignada_subproyecto?.cantidad || 0)} />
                                 </div>
                                 <div style={{ flexShrink:0 }}>
                                   {yaAgregada
@@ -702,7 +797,6 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
           {tab === 'cuadrilla' && (
             <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
 
-              {/* Modo editar: mostrar cuadrillas existentes */}
               {modo === 'editar' && cuadrillasExistentes.length > 0 && (
                 <div style={{ background:'#f0faf4', border:'1.5px solid #1f8f57', borderRadius:12, padding:'14px 16px' }}>
                   <p style={{ margin:'0 0 8px', fontSize:13, fontWeight:700, color:'#1f8f57' }}>✅ Cuadrillas asignadas actualmente</p>
@@ -717,17 +811,13 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
                 </div>
               )}
 
-              {/* Modo crear: constructor de cuadrillas */}
               {modo === 'crear' && (
                 <>
                   {cuadrillas.map((cua, cuaIdx) => {
                     const personasDisp = getPersonasDisponibles(cuaIdx);
                     const busqueda     = busquedas[cuaIdx] ?? '';
-
                     return (
                       <div key={cua._key} style={{ border:'1.5px solid #e2e8f0', borderRadius:14, overflow:'hidden' }}>
-
-                        {/* Header de la cuadrilla */}
                         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 16px', background:'#f8fafc', borderBottom: cua.expandida ? '1px solid #e2e8f0' : 'none', cursor:'pointer' }}
                           onClick={() => toggleExpandida(cuaIdx)}>
                           <div style={{ display:'flex', alignItems:'center', gap:10 }}>
@@ -754,11 +844,8 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
                           </div>
                         </div>
 
-                        {/* Cuerpo expandido */}
                         {cua.expandida && (
                           <div style={{ padding:'16px', display:'flex', flexDirection:'column', gap:14 }}>
-
-                            {/* Nombre y código */}
                             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
                               <div className="form-field" style={{ margin:0 }}>
                                 <label>Nombre *</label>
@@ -774,7 +861,6 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
                               </div>
                             </div>
 
-                            {/* Supervisor seleccionado */}
                             {cua.supervisor && (
                               <div style={{ background:'#eff6ff', border:'1.5px solid #3b82f6', borderRadius:10, padding:'10px 14px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                                 <div>
@@ -788,7 +874,6 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
                               </div>
                             )}
 
-                            {/* Miembros seleccionados */}
                             {cua.miembros.length > 0 && (
                               <div>
                                 <p style={{ margin:'0 0 6px', fontSize:12, fontWeight:700, color:'#475569', textTransform:'uppercase' }}>
@@ -813,7 +898,6 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
                               </div>
                             )}
 
-                            {/* Buscador de personas */}
                             <div>
                               <p style={{ margin:'0 0 8px', fontSize:12, fontWeight:700, color:'#475569', textTransform:'uppercase' }}>
                                 Agregar personas
@@ -827,7 +911,6 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
                                   style={{ width:'100%', padding:'8px 12px 8px 34px', border:'1.5px solid #e6e8ef', borderRadius:9, fontSize:13, outline:'none', boxSizing:'border-box' }}
                                 />
                               </div>
-
                               {loadingPersonas ? (
                                 <div style={{ textAlign:'center', padding:20, color:'#64748b', fontSize:13 }}>Cargando personas...</div>
                               ) : personasDisp.length === 0 ? (
@@ -866,7 +949,6 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
                     );
                   })}
 
-                  {/* Botón agregar nueva cuadrilla */}
                   <button onClick={agregarNuevaCuadrilla} style={{
                     display:'flex', alignItems:'center', justifyContent:'center', gap:8,
                     padding:'12px', border:'2px dashed #1f8f57', borderRadius:12,
