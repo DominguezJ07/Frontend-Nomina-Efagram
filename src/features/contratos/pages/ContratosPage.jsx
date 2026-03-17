@@ -18,7 +18,6 @@ const fmtFecha = (iso) =>
 
 const ESTADO_LABEL = { ACTIVO:'Activo', BORRADOR:'Borrador', CERRADO:'Cerrado', CANCELADO:'Cancelado' };
 
-// ── Stats card ────────────────────────────────────────────────────
 const StatCard = ({ icon, label, value, color, bg }) => {
   const Icon = icon;
   return (
@@ -34,7 +33,6 @@ const StatCard = ({ icon, label, value, color, bg }) => {
   );
 };
 
-// ══════════════════════════════════════════════════════════════════
 export default function ContratosPage() {
   const [contratos,  setContratos]  = useState([]);
   const [loading,    setLoading]    = useState(true);
@@ -42,7 +40,6 @@ export default function ContratosPage() {
   const [busqueda,   setBusqueda]   = useState('');
   const [deletingId, setDeletingId] = useState(null);
 
-  // modal: { open, modo: 'crear'|'editar'|'ver', contrato: obj|null }
   const [modal, setModal] = useState({ open: false, modo: 'crear', contrato: null });
 
   const abrirCrear  = ()  => setModal({ open: true, modo: 'crear',  contrato: null });
@@ -50,7 +47,6 @@ export default function ContratosPage() {
   const abrirEditar = (c) => setModal({ open: true, modo: 'editar', contrato: c });
   const cerrarModal = ()  => setModal(prev => ({ ...prev, open: false }));
 
-  // ── Cargar contratos ──────────────────────────────────────────
   const cargar = async () => {
     try {
       setLoading(true);
@@ -67,7 +63,6 @@ export default function ContratosPage() {
 
   useEffect(() => { cargar(); }, []);
 
-  // ── Cancelar contrato ────────────────────────────────────────
   const handleCancelar = async (c) => {
     if (!window.confirm(`¿Cancelar el contrato "${c.codigo}"? Esta acción no se puede revertir.`)) return;
     try {
@@ -81,24 +76,21 @@ export default function ContratosPage() {
     }
   };
 
-  // ── Filtro de búsqueda local ──────────────────────────────────
   const filtrados = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
     if (!q) return contratos;
     return contratos.filter(c => {
       const cod   = (c.codigo ?? '').toLowerCase();
       const finca = (c.finca?.nombre ?? '').toLowerCase();
-      const cuad  = (c.cuadrilla?.nombre ?? '').toLowerCase();
-      return cod.includes(q) || finca.includes(q) || cuad.includes(q);
+      const cuads = (c.cuadrillas ?? []).map(cu => (cu?.nombre ?? '').toLowerCase()).join(' ');
+      return cod.includes(q) || finca.includes(q) || cuads.includes(q);
     });
   }, [contratos, busqueda]);
 
-  // ── Stats derivadas ───────────────────────────────────────────
   const activos    = contratos.filter(c => c.estado === 'ACTIVO').length;
   const borradores = contratos.filter(c => c.estado === 'BORRADOR').length;
   const cerrados   = contratos.filter(c => c.estado === 'CERRADO' || c.estado === 'CANCELADO').length;
 
-  // ── Chips helper (muestra máx. 2 + "+N") ─────────────────────
   const Chips = ({ items, getLabel }) => {
     const MAX = 2;
     const visible = items.slice(0, MAX);
@@ -113,12 +105,10 @@ export default function ContratosPage() {
     );
   };
 
-  // ─────────────────────────────────────────────────────────────
   return (
     <DashboardLayout>
       <div className="contratos-container">
 
-        {/* Header */}
         <div className="contratos-header">
           <div>
             <h2>📋 Contratos</h2>
@@ -126,15 +116,13 @@ export default function ContratosPage() {
           </div>
         </div>
 
-        {/* Stats */}
         <div className="contratos-stats">
-          <StatCard icon={FileText}    label="Total"     value={contratos.length} color="#3b82f6" bg="rgba(59,130,246,0.1)" />
-          <StatCard icon={CheckCircle} label="Activos"   value={activos}          color="#1f8f57" bg="rgba(31,143,87,0.1)"  />
-          <StatCard icon={Clock}       label="Borradores" value={borradores}      color="#ca8a04" bg="rgba(234,179,8,0.1)"  />
-          <StatCard icon={XCircle}     label="Cerrados"  value={cerrados}         color="#64748b" bg="rgba(100,116,139,0.1)" />
+          <StatCard icon={FileText}    label="Total"      value={contratos.length} color="#3b82f6" bg="rgba(59,130,246,0.1)" />
+          <StatCard icon={CheckCircle} label="Activos"    value={activos}          color="#1f8f57" bg="rgba(31,143,87,0.1)"  />
+          <StatCard icon={Clock}       label="Borradores" value={borradores}       color="#ca8a04" bg="rgba(234,179,8,0.1)"  />
+          <StatCard icon={XCircle}     label="Cerrados"   value={cerrados}         color="#64748b" bg="rgba(100,116,139,0.1)" />
         </div>
 
-        {/* Toolbar */}
         <div className="contratos-toolbar">
           <input
             className="contratos-search"
@@ -147,10 +135,8 @@ export default function ContratosPage() {
           </button>
         </div>
 
-        {/* Error */}
         {error && <div className="contratos-error">{error}</div>}
 
-        {/* Tabla */}
         {loading ? (
           <div className="contratos-empty">
             <div className="empty-icon">⏳</div>
@@ -171,7 +157,7 @@ export default function ContratosPage() {
                   <th>Finca</th>
                   <th>Lotes</th>
                   <th>Actividades</th>
-                  <th>Cuadrilla</th>
+                  <th>Cuadrillas</th>
                   <th>Fecha inicio</th>
                   <th>Estado</th>
                   <th>Acciones</th>
@@ -180,30 +166,53 @@ export default function ContratosPage() {
               <tbody>
                 {filtrados.map(c => {
                   const cid = c._id ?? c.id;
+                  const cuadrillas = c.cuadrillas ?? [];
+                  const totalMiembros = cuadrillas.reduce(
+                    (sum, cu) => sum + (cu?.miembros ?? []).filter(m => m.activo).length,
+                    0
+                  );
+
                   return (
                     <tr key={cid}>
                       <td><strong>{c.codigo}</strong></td>
                       <td>{c.finca?.nombre ?? '—'}</td>
+
                       <td>
                         <Chips
                           items={c.lotes ?? []}
-                          getLabel={l => l.nombre ?? l.codigo ?? '?'}
+                          getLabel={l => l.nombre ?? `#${l.codigo}`}
                         />
                       </td>
+
                       <td>
                         <Chips
                           items={c.actividades ?? []}
-                          getLabel={a => a.nombre ?? '?'}
+                          getLabel={a => a.actividad?.nombre ?? a.nombre ?? '?'}
                         />
                       </td>
+
                       <td>
-                        {c.cuadrilla?.nombre ?? '—'}
-                        {c.cuadrilla && (
-                          <span style={{ fontSize:11, color:'#94a3b8', marginLeft:4 }}>
-                            · {(c.cuadrilla.miembros ?? []).filter(m => m.activo).length}👷
-                          </span>
+                        {cuadrillas.length === 0 ? '—' : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            {cuadrillas.slice(0, 2).map((cu, i) => (
+                              <span key={cu?._id ?? i} style={{ fontSize: 13 }}>
+                                {cu?.nombre ?? '—'}
+                              </span>
+                            ))}
+                            {cuadrillas.length > 2 && (
+                              <span style={{ fontSize: 11, color: '#94a3b8' }}>
+                                +{cuadrillas.length - 2} más
+                              </span>
+                            )}
+                            {totalMiembros > 0 && (
+                              <span style={{ fontSize: 11, color: '#94a3b8' }}>
+                                {totalMiembros} 👷
+                              </span>
+                            )}
+                          </div>
                         )}
                       </td>
+
                       <td>{fmtFecha(c.fecha_inicio)}</td>
                       <td>
                         <span className={`badge-estado badge-${c.estado}`}>
@@ -241,7 +250,6 @@ export default function ContratosPage() {
         )}
       </div>
 
-      {/* Modal */}
       <ContratoModal
         isOpen={modal.open}
         modo={modal.modo}
