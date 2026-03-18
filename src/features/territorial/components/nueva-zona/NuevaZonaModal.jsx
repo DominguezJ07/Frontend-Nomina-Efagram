@@ -116,7 +116,7 @@ export default function NuevaZonaModal({
               placeholder="Ej: 1"
               inputMode="numeric"
               maxLength={1}
-              autoFocus
+              autoFocus     
             />
           </label>
 
