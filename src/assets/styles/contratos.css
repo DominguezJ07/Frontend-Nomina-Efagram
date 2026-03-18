@@ -1,7 +1,9 @@
 /* ================================================================
    CONTRATOS — Hoja de estilos
+   Sigue las mismas variables CSS que proyectos.css
 ================================================================ */
 
+/* ── Variables (reutiliza las globales si ya están declaradas) ── */
 :root {
   --c-bg:        #f6f7fb;
   --c-card:      #ffffff;
@@ -17,7 +19,10 @@
 
 /* ── Contenedor general ───────────────────────────────────────── */
 .contratos-container {
-  min-height: 100vh;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   background: var(--c-bg);
   padding: 22px 24px;
   color: var(--c-text);
@@ -33,6 +38,7 @@
   gap: 14px;
   padding: 8px 0 18px 0;
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .contratos-header h2 {
@@ -51,9 +57,10 @@
 /* ── Stats strip ─────────────────────────────────────────────── */
 .contratos-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 14px;
   margin-bottom: 22px;
+  flex-shrink: 0;
 }
 
 .stat-card {
@@ -133,21 +140,23 @@
   white-space: nowrap;
 }
 
-.btn-crear-contrato:hover  { background: #19784a; }
+.btn-crear-contrato:hover { background: #19784a; }
 .btn-crear-contrato:active { transform: translateY(1px); }
 
-/* ── Tabla wrapper con scroll horizontal en pantallas pequeñas ── */
+/* ── Tabla ───────────────────────────────────────────────────── */
 .contratos-table-wrap {
   background: var(--c-card);
   border: 1px solid var(--c-border);
   border-radius: var(--c-radius);
-  overflow-x: auto;          /* ✅ scroll horizontal en mobile */
+  overflow-y: auto;
+  overflow-x: hidden;
   box-shadow: var(--c-shadow);
+  flex: 1;
+  min-height: 0;
 }
 
 .contratos-table {
   width: 100%;
-  min-width: 780px;          /* ✅ ancho mínimo para que no se apriete */
   border-collapse: collapse;
   font-size: 13.5px;
 }
@@ -158,7 +167,7 @@
 }
 
 .contratos-table th {
-  padding: 12px 14px;
+  padding: 12px 16px;
   text-align: left;
   font-weight: 700;
   font-size: 11.5px;
@@ -169,7 +178,7 @@
 }
 
 .contratos-table td {
-  padding: 12px 14px;
+  padding: 12px 16px;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
   color: var(--c-text);
@@ -183,13 +192,6 @@
   background: #f8fafc;
 }
 
-/* ✅ Columna acciones: ancho fijo para que nunca se corte */
-.contratos-table th:last-child,
-.contratos-table td:last-child {
-  width: 110px;
-  min-width: 110px;
-}
-
 /* ── Badge de estado ─────────────────────────────────────────── */
 .badge-estado {
   display: inline-block;
@@ -198,7 +200,6 @@
   font-size: 11.5px;
   font-weight: 700;
   border: 1px solid transparent;
-  white-space: nowrap;
 }
 
 .badge-ACTIVO    { background: rgba(31,143,87,0.1);  border-color: rgba(31,143,87,0.3);  color: #1f8f57; }
@@ -210,8 +211,6 @@
 .row-actions {
   display: flex;
   gap: 6px;
-  align-items: center;
-  flex-wrap: nowrap;   /* ✅ nunca bajar a segunda línea */
 }
 
 .btn-icon {
@@ -220,7 +219,6 @@
   border-radius: 8px;
   width: 32px;
   height: 32px;
-  min-width: 32px;     /* ✅ nunca se encoge */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -229,12 +227,11 @@
   color: var(--c-muted);
   padding: 0;
   line-height: 1;
-  flex-shrink: 0;      /* ✅ no se comprime */
 }
 
-.btn-icon:hover            { background: #e2e8f0; border-color: #cbd5e1; }
+.btn-icon:hover          { background: #e2e8f0; border-color: #cbd5e1; }
 .btn-icon.btn-danger:hover { background: rgba(220,38,38,0.08); border-color: rgba(220,38,38,0.3); }
-.btn-icon:disabled         { opacity: 0.4; cursor: not-allowed; }
+.btn-icon:disabled       { opacity: 0.4; cursor: not-allowed; }
 
 /* ── Chips de actividades/lotes ──────────────────────────────── */
 .chips-wrap {
@@ -252,9 +249,6 @@
   color: #475569;
   font-weight: 500;
   white-space: nowrap;
-  max-width: 140px;         /* ✅ evita chips gigantes */
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .chip-more {
@@ -323,7 +317,6 @@
   justify-content: space-between;
   padding: 20px 24px;
   border-bottom: 1px solid var(--c-border);
-  flex-shrink: 0;
 }
 
 .modal-contrato-header h3 {
@@ -345,7 +338,6 @@
   color: var(--c-muted);
   font-size: 18px;
   transition: background 0.15s;
-  flex-shrink: 0;
 }
 
 .modal-close-btn:hover { background: #e2e8f0; color: var(--c-text); }
@@ -365,7 +357,6 @@
   gap: 10px;
   padding: 16px 24px;
   border-top: 1px solid var(--c-border);
-  flex-shrink: 0;
 }
 
 /* ── Secciones del formulario ────────────────────────────────── */
@@ -390,13 +381,6 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-}
-
-/* ✅ En móvil, una sola columna */
-@media (max-width: 540px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
 }
 
 .form-field {
@@ -429,8 +413,6 @@
   outline: none;
   transition: border-color 0.2s;
   font-family: inherit;
-  box-sizing: border-box;
-  width: 100%;
 }
 
 .form-field input:focus,
@@ -549,7 +531,7 @@
   transition: background 0.2s;
 }
 
-.btn-buscar:hover    { background: #19784a; }
+.btn-buscar:hover { background: #19784a; }
 .btn-buscar:disabled { background: #94a3b8; cursor: not-allowed; }
 
 .trabajadores-resultados {
@@ -568,7 +550,8 @@
 }
 
 .trabajador-item:last-child { border-bottom: none; }
-.trabajador-item:hover      { background: #f8fafc; }
+
+.trabajador-item:hover { background: #f8fafc; }
 
 .trabajador-info .trab-nombre {
   font-size: 13.5px;
@@ -596,7 +579,7 @@
   flex-shrink: 0;
 }
 
-.btn-agregar-trab:hover    { background: rgba(31,143,87,0.18); }
+.btn-agregar-trab:hover { background: rgba(31,143,87,0.18); }
 .btn-agregar-trab:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .trabajadores-actuales {
@@ -680,7 +663,7 @@
   box-shadow: 0 4px 12px rgba(31,143,87,0.2);
 }
 
-.btn-guardar:hover    { background: #19784a; }
+.btn-guardar:hover { background: #19784a; }
 .btn-guardar:disabled { background: #94a3b8; cursor: not-allowed; box-shadow: none; }
 
 /* ── Info row (modo ver) ─────────────────────────────────────── */
@@ -719,47 +702,4 @@
   color: var(--c-text);
   font-weight: 500;
   margin: 0;
-}
-
-/* ── Responsive general ──────────────────────────────────────── */
-@media (max-width: 768px) {
-  .contratos-container {
-    padding: 16px 14px;
-  }
-
-  .contratos-header h2 {
-    font-size: 22px;
-  }
-
-  .contratos-stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .modal-contrato {
-    max-height: 95vh;
-    border-radius: 14px;
-  }
-
-  .modal-body {
-    padding: 16px;
-  }
-
-  .modal-footer {
-    padding: 12px 16px;
-  }
-}
-
-@media (max-width: 480px) {
-  .contratos-stats {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-
-  .stat-card {
-    padding: 12px 14px;
-  }
-
-  .stat-card .stat-value {
-    font-size: 18px;
-  }
 }

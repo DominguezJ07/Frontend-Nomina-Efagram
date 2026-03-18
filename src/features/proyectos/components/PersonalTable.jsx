@@ -10,7 +10,7 @@ function PersonalDetalleModal({ isOpen, persona, onClose }) {
 
   return (
     <>
-      <div className="zdm-overlay" onClick={onClose} />
+      <div className="zdm-overlay" />
       <div className="zdm-panel" role="dialog" aria-modal="true">
         <button className="zdm-close" onClick={onClose} aria-label="Cerrar">
           <X size={15} />
@@ -137,14 +137,14 @@ export default function PersonalTable({
         <table className="zonas-table-grid">
           <thead>
             <tr>
-              <th style={{ width: '130px' }}>Cedula</th>
-              <th style={{ width: '200px' }}>Nombre</th>
-              <th style={{ width: '130px' }}>Cargo</th>
-              <th style={{ width: '150px' }}>Finca</th>
-              <th style={{ width: '150px' }}>Proceso</th>
-              <th style={{ width: '160px' }}>Supervisor</th>
-              <th style={{ width: '110px' }}>Estado</th>
-              <th style={{ width: '110px', textAlign: 'center' }}>Acciones</th>
+              <th>Cedula</th>
+              <th>Nombre</th>
+              <th>Cargo</th>
+              <th>Finca</th>
+              <th>Proceso</th>
+              <th>Supervisor</th>
+              <th>Estado</th>
+              <th style={{ textAlign: 'center' }}>Acciones</th>
             </tr>
           </thead>
           <tbody>

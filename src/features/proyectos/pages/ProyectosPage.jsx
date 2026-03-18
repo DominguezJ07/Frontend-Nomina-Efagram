@@ -4,7 +4,7 @@ import { getProyectos, deleteProyecto } from "../services/proyectosService";
 import "../../../assets/styles/proyectos.css";
 import ProyectoModal from "../components/ProyectoModal";
 import DashboardLayout from "../../../app/layouts/DashboardLayout";
-import { Eye, Pencil, Trash2, Folder, GitBranch } from "lucide-react";
+import { Eye, Pencil, Trash2, Folder, GitBranch, MapPin, TrendingUp, Search, PlusCircle, Users } from "lucide-react";
 
 // ── Helpers ──────────────────────────────────────────────
 const fmtFecha = (iso) =>
@@ -102,14 +102,14 @@ const ProyectosPage = () => {
             </div>
           </div>
           <div className="proy-stat-card">
-            <div className="proy-stat-icon proy-stat-icon--blue">📍</div>
+            <div className="proy-stat-icon proy-stat-icon--blue"><MapPin size={22} /></div>
             <div>
               <p className="proy-stat-label">Total Lotes</p>
               <p className="proy-stat-value">{totalLotes}</p>
             </div>
           </div>
           <div className="proy-stat-card">
-            <div className="proy-stat-icon proy-stat-icon--orange">👥</div>
+            <div className="proy-stat-icon proy-stat-icon--orange"><TrendingUp size={22} /></div>
             <div>
               <p className="proy-stat-label">Avance Promedio</p>
               <p className="proy-stat-value">{avancePromedio}%</p>
@@ -120,7 +120,7 @@ const ProyectosPage = () => {
         {/* ── TOOLBAR ── */}
         <div className="proy-toolbar">
           <div className="proy-search-wrapper">
-            <span className="proy-search-icon">🔍</span>
+            <Search size={15} className="proy-search-icon" style={{ color:'#94a3b8' }} />
             <input
               className="proy-search-input"
               type="text"
@@ -129,8 +129,8 @@ const ProyectosPage = () => {
               onChange={e => setBusqueda(e.target.value)}
             />
           </div>
-          <button className="btn-crear" onClick={abrirCrear}>
-            + &nbsp;Nuevo Proyecto
+          <button className="btn-crear" onClick={abrirCrear} style={{ display:'flex', alignItems:'center', gap:7 }}>
+            <PlusCircle size={16} /> Nuevo Proyecto
           </button>
         </div>
 
@@ -206,13 +206,13 @@ const ProyectosPage = () => {
                 {/* Cuadrillas y lotes */}
                 <div className="proy-meta-row">
                   {proyecto.cuadrillas != null && (
-                    <span className="proy-meta-item">
-                      👥 {proyecto.cuadrillas} cuadrilla{proyecto.cuadrillas !== 1 ? "s" : ""}
+                    <span className="proy-meta-item" style={{ display:'inline-flex', alignItems:'center', gap:4 }}>
+                      <Users size={12} /> {proyecto.cuadrillas} cuadrilla{proyecto.cuadrillas !== 1 ? "s" : ""}
                     </span>
                   )}
                   {(proyecto.lotes?.length ?? proyecto.cantidad_lotes) ? (
-                    <span className="proy-meta-item">
-                      📍 {proyecto.lotes?.length ?? proyecto.cantidad_lotes} lote
+                    <span className="proy-meta-item" style={{ display:'inline-flex', alignItems:'center', gap:4 }}>
+                      <MapPin size={12} /> {proyecto.lotes?.length ?? proyecto.cantidad_lotes} lote
                       {(proyecto.lotes?.length ?? proyecto.cantidad_lotes) !== 1 ? "s" : ""}
                     </span>
                   ) : null}

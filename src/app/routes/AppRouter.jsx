@@ -21,6 +21,7 @@ import FincasPage from '../../features/territorial/pages/FincasPage';
 
 import CatalogoIntervencionesPage from "../../features/proyectos/pages/CatalogoIntervencionesPage";
 import CatalogoProcesosPage from "../../features/proyectos/pages/CatalogoProcesosPage";
+import CatalogoCargosPage from "../../features/proyectos/pages/CatalogoCargosPage";
 import SubproyectosPage from "../../features/proyectos/pages/SubproyectosPage";
 
 // Contratos (AHORA DENTRO DE PROYECTOS)
@@ -58,6 +59,7 @@ export default function AppRouter() {
       <Route path="/configuracion/catalogo-intervenciones" element={<PrivateRoute><CatalogoIntervencionesPage /></PrivateRoute>} />
       <Route path="/configuracion/catalogo-personal" element={<PrivateRoute><CatalogoPersonalPage /></PrivateRoute>} />
       <Route path="/configuracion/catalogo-procesos" element={<PrivateRoute><CatalogoProcesosPage /></PrivateRoute>} />
+      <Route path="/configuracion/catalogo-cargos" element={<PrivateRoute><CatalogoCargosPage /></PrivateRoute>} />
       <Route path="/configuracion/ubicacion/zonas" element={<PrivateRoute><ZonasPage /></PrivateRoute>} />
       <Route path="/configuracion/ubicacion/nucleos" element={<PrivateRoute><NucleosPage /></PrivateRoute>} />
       <Route path="/configuracion/ubicacion/fincas" element={<PrivateRoute><FincasPage /></PrivateRoute>} />

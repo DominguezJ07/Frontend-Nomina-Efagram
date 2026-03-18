@@ -22,7 +22,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
   Plus, Search, AlertCircle, CheckCircle,
-  Activity, Clock, XCircle, CheckSquare
+  Activity, Clock, XCircle, CheckSquare,
+  CalendarRange
 } from 'lucide-react';
 import DashboardLayout from '../../../app/layouts/DashboardLayout';
 import ProgramacionTable from '../components/ProgramacionTable';
@@ -34,8 +35,8 @@ import '../../../assets/styles/Programacionpage.css';
 // ── Normalizar respuesta ──────────────────────────────────────────────
 const normalizeProgramaciones = (response) => {
   if (Array.isArray(response?.data?.programaciones)) return response.data.programaciones;
-  if (Array.isArray(response?.data))                 return response.data;
-  if (Array.isArray(response))                       return response;
+  if (Array.isArray(response?.data)) return response.data;
+  if (Array.isArray(response)) return response;
   return [];
 };
 
@@ -64,19 +65,19 @@ const StatCard = ({ icon, label, value, color, bg }) => {
 
 // ═══════════════════════════════════════════════════════════════════
 export default function ProgramacionPage() {
-  const [programaciones,           setProgramaciones]           = useState([]);
-  const [loading,                  setLoading]                  = useState(true);
-  const [error,                    setError]                    = useState(null);
-  const [success,                  setSuccess]                  = useState(null);
-  const [showModalCrear,           setShowModalCrear]           = useState(false);
-  const [showModalRegistro,        setShowModalRegistro]        = useState(false);
+  const [programaciones, setProgramaciones] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [showModalCrear, setShowModalCrear] = useState(false);
+  const [showModalRegistro, setShowModalRegistro] = useState(false);
   const [programacionSeleccionada, setProgramacionSeleccionada] = useState(null);
-  const [searchTerm,               setSearchTerm]               = useState('');
-  const [filtroEstado,             setFiltroEstado]             = useState(''); // '' = TODAS
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filtroEstado, setFiltroEstado] = useState(''); // '' = TODAS
 
   useEffect(() => {
     cargarProgramaciones();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtroEstado]);
 
   // ── Cargar programaciones ─────────────────────────────────────────
@@ -114,18 +115,18 @@ export default function ProgramacionPage() {
     const q = searchTerm.trim().toLowerCase();
     if (!q) return programaciones;
     return programaciones.filter(p =>
-      (p.contrato?.codigo  || '').toLowerCase().includes(q) ||
-      (p.finca?.nombre     || '').toLowerCase().includes(q) ||
+      (p.contrato?.codigo || '').toLowerCase().includes(q) ||
+      (p.finca?.nombre || '').toLowerCase().includes(q) ||
       (p.actividad?.nombre || '').toLowerCase().includes(q)
     );
   }, [programaciones, searchTerm]);
 
   // Stats derivadas del array local
   const stats = useMemo(() => ({
-    total:       programaciones.length,
-    activas:     programaciones.filter(p => p.estado === 'ACTIVA').length,
+    total: programaciones.length,
+    activas: programaciones.filter(p => p.estado === 'ACTIVA').length,
     completadas: programaciones.filter(p => p.estado === 'COMPLETADA').length,
-    canceladas:  programaciones.filter(p => p.estado === 'CANCELADA').length,
+    canceladas: programaciones.filter(p => p.estado === 'CANCELADA').length,
   }), [programaciones]);
 
   // ── Crear ─────────────────────────────────────────────────────────
@@ -167,11 +168,11 @@ export default function ProgramacionPage() {
   };
 
   const FILTROS = [
-    { value: '',           label: 'Todas'      },
-    { value: 'ACTIVA',     label: 'Activas'    },
-    { value: 'COMPLETADA', label: 'Completadas'},
-    { value: 'CANCELADA',  label: 'Canceladas' },
-    { value: 'PAUSADA',    label: 'Pausadas'   },
+    { value: '', label: 'Todas' },
+    { value: 'ACTIVA', label: 'Activas' },
+    { value: 'COMPLETADA', label: 'Completadas' },
+    { value: 'CANCELADA', label: 'Canceladas' },
+    { value: 'PAUSADA', label: 'Pausadas' },
   ];
 
   return (
@@ -181,7 +182,22 @@ export default function ProgramacionPage() {
         {/* Header */}
         <div className="programacion-header">
           <div className="header-content">
-            <h1>📅 Programación de Ejecución</h1>
+            <h1>
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                background: 'rgba(59,130,246,0.12)',
+                marginRight: 12,
+                verticalAlign: 'middle'
+              }}>
+                <CalendarRange size={20} color="#3b82f6" />
+              </span>
+              Programación de Ejecución
+            </h1>
             <p>Gestiona la ejecución semanal de contratos — cada programación cubre 7 días</p>
           </div>
           <button className="btn btn-primary btn-lg" onClick={() => setShowModalCrear(true)}>
@@ -191,10 +207,10 @@ export default function ProgramacionPage() {
 
         {/* Stats */}
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <StatCard icon={Activity}    label="Total"       value={stats.total}       color="#3b82f6" bg="rgba(59,130,246,0.1)"  />
-          <StatCard icon={Clock}       label="Activas"     value={stats.activas}     color="#1f8f57" bg="rgba(31,143,87,0.1)"   />
-          <StatCard icon={CheckSquare} label="Completadas" value={stats.completadas} color="#8b5cf6" bg="rgba(139,92,246,0.1)"  />
-          <StatCard icon={XCircle}     label="Canceladas"  value={stats.canceladas}  color="#64748b" bg="rgba(100,116,139,0.1)" />
+          <StatCard icon={Activity} label="Total" value={stats.total} color="#3b82f6" bg="rgba(59,130,246,0.1)" />
+          <StatCard icon={Clock} label="Activas" value={stats.activas} color="#1f8f57" bg="rgba(31,143,87,0.1)" />
+          <StatCard icon={CheckSquare} label="Completadas" value={stats.completadas} color="#8b5cf6" bg="rgba(139,92,246,0.1)" />
+          <StatCard icon={XCircle} label="Canceladas" value={stats.canceladas} color="#64748b" bg="rgba(100,116,139,0.1)" />
         </div>
 
         {/* Alertas */}
@@ -239,9 +255,9 @@ export default function ProgramacionPage() {
                 style={{
                   padding: '7px 14px', borderRadius: 8, fontWeight: 600,
                   fontSize: 13, cursor: 'pointer', transition: 'all 0.15s',
-                  border:     filtroEstado === f.value ? '2px solid #1f8f57' : '1.5px solid #e2e8f0',
+                  border: filtroEstado === f.value ? '2px solid #1f8f57' : '1.5px solid #e2e8f0',
                   background: filtroEstado === f.value ? '#1f8f57' : '#fff',
-                  color:      filtroEstado === f.value ? '#fff' : '#475569',
+                  color: filtroEstado === f.value ? '#fff' : '#475569',
                 }}
               >
                 {f.label}

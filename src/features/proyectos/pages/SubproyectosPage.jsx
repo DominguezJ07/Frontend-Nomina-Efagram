@@ -4,11 +4,12 @@ import DashboardLayout from '../../../app/layouts/DashboardLayout';
 import SubproyectoModal from '../components/SubproyectoModal';
 import { getSubproyectos, deleteSubproyecto } from '../services/subproyectosService';
 import { getProyectos } from '../services/proyectosService';
-import { Folder, Plus, Pencil, Trash2, MapPin, Users } from 'lucide-react';
+import { FolderGit2, Plus, Pencil, Trash2, MapPin, Users } from 'lucide-react';
+import '../../../assets/styles/proyectos.css';
 
 const ESTADO_COLOR = {
-  ACTIVO:    { bg: '#f0faf4', color: '#1f8f57', border: '#1f8f57' },
-  CERRADO:   { bg: '#f1f5f9', color: '#64748b', border: '#94a3b8' },
+  ACTIVO: { bg: '#f0faf4', color: '#1f8f57', border: '#1f8f57' },
+  CERRADO: { bg: '#f1f5f9', color: '#64748b', border: '#94a3b8' },
   CANCELADO: { bg: '#fee2e2', color: '#dc2626', border: '#dc2626' },
 };
 
@@ -16,12 +17,12 @@ const SubproyectosPage = () => {
   const [searchParams] = useSearchParams();
   const proyectoIdParam = searchParams.get('proyecto');
 
-  const [proyectos,    setProyectos]    = useState([]);
-  const [proyectoSel,  setProyectoSel]  = useState(proyectoIdParam || '');
-  const [proyectoObj,  setProyectoObj]  = useState(null);
+  const [proyectos, setProyectos] = useState([]);
+  const [proyectoSel, setProyectoSel] = useState(proyectoIdParam || '');
+  const [proyectoObj, setProyectoObj] = useState(null);
   const [subproyectos, setSubproyectos] = useState([]);
-  const [loading,      setLoading]      = useState(false);
-  const [modalState,   setModalState]   = useState({ open: false, sub: null });
+  const [loading, setLoading] = useState(false);
+  const [modalState, setModalState] = useState({ open: false, sub: null });
 
   // Cargar proyectos para el selector
   useEffect(() => {
@@ -74,7 +75,7 @@ const SubproyectosPage = () => {
       .finally(() => setLoading(false));
   };
 
-  const activos  = subproyectos.filter(s => s.estado === 'ACTIVO').length;
+  const activos = subproyectos.filter(s => s.estado === 'ACTIVO').length;
   const cerrados = subproyectos.filter(s => s.estado === 'CERRADO').length;
 
   return (
@@ -84,8 +85,19 @@ const SubproyectosPage = () => {
         {/* ── Header ── */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#0f172a' }}>
-              📂 Subproyectos
+            <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                background: 'rgba(99,102,241,0.12)',
+              }}>
+                <FolderGit2 size={20} color="#6366f1" />
+              </span>
+              Subproyectos
             </h2>
             <p style={{ margin: '4px 0 0', fontSize: 14, color: '#64748b' }}>
               Gestiona los subproyectos y la asignación de actividades
@@ -129,7 +141,7 @@ const SubproyectosPage = () => {
           {proyectoObj && (
             <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#f8fafc', border: '1px solid #e6e8ef', borderRadius: 8, padding: '5px 12px', fontSize: 13 }}>
-                <Folder size={13} color="#64748b" />
+                <FolderGit2 size={13} color="#64748b" />
                 <span style={{ color: '#64748b' }}>Estado:</span>
                 <span style={{ fontWeight: 700, color: '#0f172a' }}>{proyectoObj.estado}</span>
               </div>
@@ -151,9 +163,9 @@ const SubproyectosPage = () => {
         {proyectoSel && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
             {[
-              { label: 'Total',    value: subproyectos.length, color: '#3b82f6', bg: '#eff6ff' },
-              { label: 'Activos',  value: activos,             color: '#1f8f57', bg: '#f0faf4' },
-              { label: 'Cerrados', value: cerrados,            color: '#64748b', bg: '#f1f5f9' },
+              { label: 'Total', value: subproyectos.length, color: '#3b82f6', bg: '#eff6ff' },
+              { label: 'Activos', value: activos, color: '#1f8f57', bg: '#f0faf4' },
+              { label: 'Cerrados', value: cerrados, color: '#64748b', bg: '#f1f5f9' },
             ].map(s => (
               <div key={s.label} style={{ background: s.bg, border: `1.5px solid ${s.color}33`, borderRadius: 12, padding: '16px 20px' }}>
                 <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: s.color, textTransform: 'uppercase', letterSpacing: '0.4px' }}>{s.label}</p>

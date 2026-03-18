@@ -5,7 +5,7 @@ import { getZonas } from "../../territorial/services/zonas.service";
 import ActividadesIntervencion from "./ActividadesIntervencion";
 import {
   Folder, Calendar, User, Tag, TrendingUp,
-  FileText, Pencil, DollarSign, MapPin
+  FileText, Pencil, DollarSign, MapPin, PlusCircle
 } from "lucide-react";
 
 // ══════════════════════════════════════════════════════════
@@ -632,8 +632,11 @@ const ProyectoModal = ({
           }}
         >
           <div>
-            <h3 style={{ margin: 0 }}>
-              {modoEditar ? "✏️ Editar Proyecto" : "➕ Nuevo Proyecto"}
+            <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 7, background: modoEditar ? 'rgba(234,179,8,0.12)' : 'rgba(99,102,241,0.12)' }}>
+                {modoEditar ? <Pencil size={14} color="#ca8a04" /> : <PlusCircle size={14} color="#6366f1" />}
+              </span>
+              {modoEditar ? "Editar Proyecto" : "Nuevo Proyecto"}
             </h3>
             {modoEditar && (
               <p style={{ margin: "4px 0 0", fontSize: 13, color: "#64748b" }}>

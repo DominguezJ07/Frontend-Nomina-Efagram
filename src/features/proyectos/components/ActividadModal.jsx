@@ -1,38 +1,49 @@
-import { useEffect, useReducer } from "react";
-import { X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { 
+  X, 
+  Sparkles, 
+  Hash, 
+  Type, 
+  FolderTree, 
+  Ruler, 
+  ToggleLeft, 
+  DollarSign, 
+  FileText 
+} from "lucide-react";
 import { createActividad, updateActividad } from "../services/actividadesService";
-import { getIntervenciones } from "../services/intervencionesService";
 
-// ── Estado inicial del formulario ─────────────────────────────────────────────
-const INITIAL_STATE = {
-  codigo:       "",
-  nombre:       "",
-  intervencion: "",
-  activa:       "true",
-  loading:      false,
-  errors:       {},
+// ── Constantes ────────────────────────────────────────────
+const CATEGORIAS = [
+  { value: "PREPARACION_TERRENO", label: "Preparacion de Terreno" },
+  { value: "SIEMBRA",             label: "Siembra" },
+  { value: "MANTENIMIENTO",       label: "Mantenimiento" },
+  { value: "CONTROL_MALEZA",      label: "Control de Maleza" },
+  { value: "FERTILIZACION",       label: "Fertilizacion" },
+  { value: "PODAS",               label: "Podas" },
+  { value: "OTRO",                label: "Otro" },
+];
+
+const UNIDADES = [
+  { value: "HECTAREA",       label: "Hectarea" },
+  { value: "ARBOL",          label: "Arbol" },
+  { value: "METRO",          label: "Metro" },
+  { value: "METRO_CUADRADO", label: "Metro Cuadrado" },
+  { value: "KILOGRAMO",      label: "Kilogramo" },
+  { value: "LITRO",          label: "Litro" },
+  { value: "JORNAL",         label: "Jornal" },
+  { value: "UNIDAD",         label: "Unidad" },
+];
+
+const FORM_INICIAL = {
+  codigo:                      "",
+  nombre:                      "",
+  categoria:                   "PREPARACION_TERRENO",
+  unidad_medida:               "HECTAREA",
+  activa:                      "true",
+  rendimiento_diario_estimado: "",
+  descripcion:                 "",
 };
 
-function reducer(state, action) {
-  switch (action.type) {
-    case "SET_FIELD":
-      return {
-        ...state,
-        [action.field]: action.value,
-        errors: { ...state.errors, [action.field]: null },
-      };
-    case "RESET":
-      return { ...INITIAL_STATE, ...action.values };
-    case "SET_LOADING":
-      return { ...state, loading: action.value };
-    case "SET_ERRORS":
-      return { ...state, errors: action.value, loading: false };
-    default:
-      return state;
-  }
-}
-
-// ── Estilos inline ────────────────────────────────────────────────────────────
 const inputStyle = (hasError = false) => ({
   width: "100%",
   padding: "9px 12px",
@@ -46,7 +57,7 @@ const inputStyle = (hasError = false) => ({
   fontFamily: "inherit",
 });
 
-const readOnlyStyle = {
+const readOnlyInputStyle = {
   ...inputStyle(),
   background: "#f1f5f9",
   color: "#64748b",
@@ -68,96 +79,92 @@ const selectStyle = {
 };
 
 const labelStyle = {
-  display: "block",
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
   fontSize: 13,
   fontWeight: 600,
   color: "#374151",
-  marginBottom: 5,
+  marginBottom: 6,
 };
 
-// ── Componente ────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+// COMPONENTE PRINCIPAL
+// ══════════════════════════════════════════════════════════
 const ActividadModal = ({ isOpen, onClose, onSuccess, actividadEditar = null }) => {
   const isEdit = Boolean(actividadEditar);
-  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
 
-  // Solo intervenciones — fetch legítimo
-  const [intervenciones, setIntervenciones] = useReducer(
-    (_, list) => list,
-    []
-  );
+  const [form,    setForm]    = useState(FORM_INICIAL);
+  const [loading, setLoading] = useState(false);
+  const [errors,  setErrors]  = useState({});
 
-  // Cargar intervenciones al abrir
   useEffect(() => {
     if (!isOpen) return;
-    getIntervenciones()
-      .then((res) => {
-        let list = [];
-        if (Array.isArray(res))                  list = res;
-        else if (Array.isArray(res?.data))       list = res.data;
-        else if (Array.isArray(res?.data?.data)) list = res.data.data;
-        setIntervenciones(list.filter((i) => i.activo !== false));
-      })
-      .catch(() => setIntervenciones([]));
-  }, [isOpen]);
 
-  // Rellenar al editar — UN solo dispatch
-  useEffect(() => {
-    if (!isOpen) return;
-    dispatch({
-      type: "RESET",
-      values: isEdit && actividadEditar
-        ? {
-            codigo:       actividadEditar.codigo       ?? "",
-            nombre:       actividadEditar.nombre       ?? "",
-            intervencion: actividadEditar.intervencion?._id
-                          ?? actividadEditar.intervencion
-                          ?? "",
-            activa:       String(actividadEditar.activa ?? true),
-          }
-        : {},
-    });
+    if (isEdit && actividadEditar) {
+      setForm({
+        codigo:                      actividadEditar.codigo                      ?? "",
+        nombre:                      actividadEditar.nombre                      ?? "",
+        categoria:                   actividadEditar.categoria                   ?? "PREPARACION_TERRENO",
+        unidad_medida:               actividadEditar.unidad_medida               ?? "HECTAREA",
+        activa:                      String(actividadEditar.activa ?? true),
+        rendimiento_diario_estimado: actividadEditar.rendimiento_diario_estimado != null
+                                       ? String(actividadEditar.rendimiento_diario_estimado)
+                                       : "",
+        descripcion:                 actividadEditar.descripcion ?? "",
+      });
+    } else {
+      setForm(FORM_INICIAL);
+    }
+
+    setErrors({});
   }, [isOpen, actividadEditar]);
 
-  if (!isOpen) return null;
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }));
+  };
 
-  const setField = (field) => (e) =>
-    dispatch({ type: "SET_FIELD", field, value: e.target.value });
-
-  // Solo dígitos en el código
-  const handleCodigo = (e) => {
-    const val = e.target.value.replace(/\D/g, "");
-    dispatch({ type: "SET_FIELD", field: "codigo", value: val });
+  const validate = () => {
+    const errs = {};
+    if (!form.codigo.trim()) errs.codigo = "El código es obligatorio";
+    if (!form.nombre.trim()) errs.nombre = "El nombre es obligatorio";
+    if (form.rendimiento_diario_estimado !== "" && isNaN(Number(form.rendimiento_diario_estimado)))
+      errs.rendimiento_diario_estimado = "Debe ser un número válido";
+    return errs;
   };
 
   const handleSubmit = async () => {
-    const errs = {};
-    if (!state.codigo.trim()) errs.codigo = "El código es obligatorio";
-    if (!state.nombre.trim()) errs.nombre = "El nombre es obligatorio";
-    if (Object.keys(errs).length > 0) {
-      dispatch({ type: "SET_ERRORS", value: errs });
-      return;
-    }
+    const errs = validate();
+    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
 
     try {
-      dispatch({ type: "SET_LOADING", value: true });
+      setLoading(true);
 
       const payload = {
-        nombre:        state.nombre.trim(),
-        activa:        state.activa === "true",
-        unidad_medida: "HECTAREA",  // requerido por el backend
-        categoria:     "OTRO",      // requerido por el backend
-        intervencion:  state.intervencion || undefined,
+        nombre:        form.nombre.trim(),
+        categoria:     form.categoria,
+        unidad_medida: form.unidad_medida,
+        activa:        form.activa === "true",
+        descripcion:   form.descripcion.trim(),
+        ...(form.rendimiento_diario_estimado !== ""
+          ? { rendimiento_diario_estimado: Number(form.rendimiento_diario_estimado) }
+          : {}),
       };
 
       if (isEdit) {
         await updateActividad(actividadEditar._id, payload);
       } else {
-        // El backend guarda codigo como String uppercase
-        await createActividad({ ...payload, codigo: String(state.codigo).trim() });
+        await createActividad({
+          ...payload,
+          codigo: form.codigo.trim().toUpperCase(),
+        });
       }
 
       onSuccess?.();
       onClose?.();
+
     } catch (err) {
       const serverMsg =
         err?.response?.data?.errors?.[0]?.message ||
@@ -167,12 +174,16 @@ const ActividadModal = ({ isOpen, onClose, onSuccess, actividadEditar = null }) 
         "Error guardando la actividad";
 
       if (err?.response?.status === 409) {
-        dispatch({ type: "SET_ERRORS", value: { codigo: "Este código ya está en uso" } });
+        setErrors({ codigo: "Este código ya está en uso" });
       } else {
-        dispatch({ type: "SET_ERRORS", value: { _general: serverMsg } });
+        setErrors({ _general: serverMsg });
       }
+    } finally {
+      setLoading(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div
@@ -185,9 +196,9 @@ const ActividadModal = ({ isOpen, onClose, onSuccess, actividadEditar = null }) 
       }}
     >
       <div
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
         style={{
-          width: "min(480px, calc(100% - 24px))",
+          width: "min(560px, calc(100% - 24px))",
           background: "#fff",
           borderRadius: 14,
           boxShadow: "0 20px 60px rgba(15,23,42,0.2)",
@@ -197,7 +208,7 @@ const ActividadModal = ({ isOpen, onClose, onSuccess, actividadEditar = null }) 
           overflowY: "auto",
         }}
       >
-        {/* HEADER */}
+        {/* ── HEADER ── */}
         <div style={{
           padding: "20px 24px 16px",
           borderBottom: "1px solid #e5e7eb",
@@ -205,13 +216,28 @@ const ActividadModal = ({ isOpen, onClose, onSuccess, actividadEditar = null }) 
           alignItems: "flex-start",
           justifyContent: "space-between",
         }}>
-          <div>
-            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#111827" }}>
-              {isEdit ? "Editar Actividad" : "Nueva Actividad"}
-            </h3>
-            <p style={{ margin: "3px 0 0", fontSize: 13, color: "#6b7280" }}>
-              Catálogo de actividades del sistema
-            </p>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            {/* Icono del header - líneas MUY delgadas */}
+            <div style={{
+              width: 44,
+              height: 44,
+              borderRadius: "50%",
+              background: "rgba(139, 92, 246, 0.1)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              <Sparkles size={20} color="#8b5cf6" strokeWidth={1} />
+            </div>
+            <div>
+              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#111827" }}>
+                {isEdit ? "Editar Actividad" : "Nueva Actividad"}
+              </h3>
+              <p style={{ margin: "3px 0 0", fontSize: 13, color: "#6b7280" }}>
+                Catálogo de actividades del sistema
+              </p>
+            </div>
           </div>
 
           <button
@@ -221,112 +247,244 @@ const ActividadModal = ({ isOpen, onClose, onSuccess, actividadEditar = null }) 
               background: "#f3f4f6",
               border: "1.5px solid #e5e7eb",
               borderRadius: 8,
-              width: 34, height: 34,
-              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 34,
+              height: 34,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               cursor: "pointer",
+              flexShrink: 0,
               color: "#374151",
+              transition: "background 0.15s, color 0.15s",
             }}
-            onMouseEnter={(e) => {
+            onMouseEnter={e => {
               e.currentTarget.style.background = "#fee2e2";
               e.currentTarget.style.color = "#dc2626";
               e.currentTarget.style.borderColor = "#fca5a5";
             }}
-            onMouseLeave={(e) => {
+            onMouseLeave={e => {
               e.currentTarget.style.background = "#f3f4f6";
               e.currentTarget.style.color = "#374151";
               e.currentTarget.style.borderColor = "#e5e7eb";
             }}
           >
-            <X size={16} strokeWidth={2.5} />
+            <X size={16} strokeWidth={1.5} />
           </button>
         </div>
 
-        {/* BODY */}
-        <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+        {/* ── BODY ── */}
+        <div style={{ padding: "20px 24px" }}>
 
-          {state.errors._general && (
+          {errors._general && (
             <div style={{
               background: "#fef2f2", border: "1px solid #fecaca",
               borderRadius: 8, padding: "10px 14px",
-              fontSize: 13, color: "#dc2626",
+              fontSize: 13, color: "#dc2626", marginBottom: 16,
             }}>
-              {state.errors._general}
+              {errors._general}
             </div>
           )}
 
-          {/* Código + Nombre */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
+          {/* FILA 1: Código + Nombre */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px", marginBottom: 16 }}>
             <div>
               <label style={labelStyle}>
-                Código{!isEdit && <span style={{ color: "#dc2626" }}> *</span>}
+                <div style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  background: "rgba(59, 130, 246, 0.1)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}>
+                  <Hash size={16} color="#3b82f6" strokeWidth={1} />
+                </div>
+                Codigo{!isEdit && <span style={{ color: "#dc2626" }}> *</span>}
               </label>
               <input
-                value={state.codigo}
-                onChange={handleCodigo}
-                placeholder="Ej: 1"
-                inputMode="numeric"
+                name="codigo"
+                value={form.codigo}
+                onChange={handleChange}
+                placeholder="Ej: ACT-001"
                 readOnly={isEdit}
-                style={isEdit ? readOnlyStyle : inputStyle(!!state.errors.codigo)}
+                style={isEdit ? readOnlyInputStyle : inputStyle(!!errors.codigo)}
                 title={isEdit ? "El código no puede modificarse" : ""}
               />
-              {state.errors.codigo && (
-                <p style={{ margin: "4px 0 0", fontSize: 12, color: "#dc2626" }}>
-                  {state.errors.codigo}
-                </p>
+              {errors.codigo && (
+                <p style={{ margin: "4px 0 0", fontSize: 12, color: "#dc2626" }}>{errors.codigo}</p>
               )}
             </div>
 
             <div>
               <label style={labelStyle}>
+                <div style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  background: "rgba(16, 185, 129, 0.1)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}>
+                  <Type size={16} color="#10b981" strokeWidth={1} />
+                </div>
                 Nombre <span style={{ color: "#dc2626" }}>*</span>
               </label>
               <input
-                value={state.nombre}
-                onChange={setField("nombre")}
+                name="nombre"
+                value={form.nombre}
+                onChange={handleChange}
                 placeholder="Nombre de la actividad"
-                style={inputStyle(!!state.errors.nombre)}
+                style={inputStyle(!!errors.nombre)}
               />
-              {state.errors.nombre && (
-                <p style={{ margin: "4px 0 0", fontSize: 12, color: "#dc2626" }}>
-                  {state.errors.nombre}
-                </p>
+              {errors.nombre && (
+                <p style={{ margin: "4px 0 0", fontSize: 12, color: "#dc2626" }}>{errors.nombre}</p>
               )}
             </div>
           </div>
 
-          {/* Intervención */}
-          <div>
-            <label style={labelStyle}>Intervención</label>
-            <select
-              value={state.intervencion}
-              onChange={setField("intervencion")}
-              style={selectStyle}
-            >
-              <option value="">— Sin intervención —</option>
-              {intervenciones.map((i) => (
-                <option key={i._id ?? i.id} value={i._id ?? i.id}>
-                  {i.codigo} – {i.nombre}
-                </option>
-              ))}
-            </select>
+          {/* FILA 2: Categoría + Unidad + Estado */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0 12px", marginBottom: 16 }}>
+            <div>
+              <label style={labelStyle}>
+                <div style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  background: "rgba(245, 158, 11, 0.1)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}>
+                  <FolderTree size={16} color="#f59e0b" strokeWidth={1} />
+                </div>
+                Categoria
+              </label>
+              <select name="categoria" value={form.categoria} onChange={handleChange} style={selectStyle}>
+                {CATEGORIAS.map(c => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label style={labelStyle}>
+                <div style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  background: "rgba(139, 92, 246, 0.1)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}>
+                  <Ruler size={16} color="#8b5cf6" strokeWidth={1} />
+                </div>
+                Unidad
+              </label>
+              <select name="unidad_medida" value={form.unidad_medida} onChange={handleChange} style={selectStyle}>
+                {UNIDADES.map(u => (
+                  <option key={u.value} value={u.value}>{u.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label style={labelStyle}>
+                <div style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  background: form.activa === "true" ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}>
+                  <ToggleLeft size={16} color={form.activa === "true" ? "#10b981" : "#ef4444"} strokeWidth={1} />
+                </div>
+                Estado
+              </label>
+              <select name="activa" value={form.activa} onChange={handleChange} style={selectStyle}>
+                <option value="true">Activa</option>
+                <option value="false">Inactiva</option>
+              </select>
+            </div>
           </div>
 
-          {/* Estado */}
-          <div>
-            <label style={labelStyle}>Estado</label>
-            <select
-              value={state.activa}
-              onChange={setField("activa")}
-              style={selectStyle}
-            >
-              <option value="true">Activa</option>
-              <option value="false">Inactiva</option>
-            </select>
+          {/* FILA 3: Precio Base */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>
+              <div style={{
+                width: 32,
+                height: 32,
+                borderRadius: "50%",
+                background: "rgba(34, 197, 94, 0.1)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}>
+                <DollarSign size={16} color="#22c55e" strokeWidth={1} />
+              </div>
+              Precio Base ($)
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              name="rendimiento_diario_estimado"
+              value={form.rendimiento_diario_estimado}
+              onChange={handleChange}
+              placeholder="Ej: 850000"
+              style={inputStyle(!!errors.rendimiento_diario_estimado)}
+            />
+            {errors.rendimiento_diario_estimado && (
+              <p style={{ margin: "4px 0 0", fontSize: 12, color: "#dc2626" }}>
+                {errors.rendimiento_diario_estimado}
+              </p>
+            )}
           </div>
 
+          {/* FILA 4: Descripción */}
+          <div>
+            <label style={labelStyle}>
+              <div style={{
+                width: 32,
+                height: 32,
+                borderRadius: "50%",
+                background: "rgba(99, 102, 241, 0.1)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}>
+                <FileText size={16} color="#6366f1" strokeWidth={1} />
+              </div>
+              Descripcion
+            </label>
+            <textarea
+              name="descripcion"
+              value={form.descripcion}
+              onChange={handleChange}
+              placeholder="Descripción detallada de la actividad..."
+              rows={4}
+              style={{
+                width: "100%",
+                padding: "9px 12px",
+                border: "1.5px solid #d1d5db",
+                borderRadius: 8,
+                fontSize: 14,
+                color: "#0f172a",
+                background: "#fff",
+                outline: "none",
+                resize: "vertical",
+                fontFamily: "inherit",
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
         </div>
 
-        {/* FOOTER */}
+        {/* ── FOOTER ── */}
         <div style={{
           padding: "14px 24px",
           borderTop: "1px solid #e5e7eb",
@@ -336,12 +494,16 @@ const ActividadModal = ({ isOpen, onClose, onSuccess, actividadEditar = null }) 
         }}>
           <button
             onClick={onClose}
-            disabled={state.loading}
+            disabled={loading}
             style={{
-              background: "#f9fafb", color: "#374151",
+              background: "#f9fafb",
+              color: "#374151",
               border: "1px solid #d1d5db",
-              padding: "10px 20px", borderRadius: 8,
-              fontWeight: 600, cursor: "pointer", fontSize: 14,
+              padding: "10px 20px",
+              borderRadius: 8,
+              fontWeight: 600,
+              cursor: "pointer",
+              fontSize: 14,
             }}
           >
             Cancelar
@@ -349,18 +511,20 @@ const ActividadModal = ({ isOpen, onClose, onSuccess, actividadEditar = null }) 
 
           <button
             onClick={handleSubmit}
-            disabled={state.loading}
+            disabled={loading}
             style={{
-              background: state.loading ? "#9ca3af" : "#1f8f57",
-              color: "#fff", border: "none",
-              padding: "10px 24px", borderRadius: 8,
+              background: loading ? "#9ca3af" : "#1f8f57",
+              color: "#fff",
+              border: "none",
+              padding: "10px 24px",
+              borderRadius: 8,
               fontWeight: 700,
-              cursor: state.loading ? "not-allowed" : "pointer",
+              cursor: loading ? "not-allowed" : "pointer",
               fontSize: 14,
-              boxShadow: state.loading ? "none" : "0 4px 12px rgba(31,143,87,0.25)",
+              boxShadow: loading ? "none" : "0 4px 12px rgba(31,143,87,0.25)",
             }}
           >
-            {state.loading ? "Guardando..." : "Guardar"}
+            {loading ? "Guardando..." : "Guardar"}
           </button>
         </div>
       </div>

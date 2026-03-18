@@ -26,7 +26,7 @@
   padding: 12px 28px 24px;
   min-height: 0;
   background: #f4f6f9;
-  height: 100vh;
+  height: 100%;
 }
 
 /* ======================================================
@@ -87,7 +87,6 @@
   border: 1px solid #e8edf2;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   padding: 0;
-  max-height: calc(100vh - 230px);
   margin-bottom: 20px;
 }
 
@@ -180,7 +179,7 @@
 .zonas-table-scroll {
   flex: 1;
   overflow-y: auto;
-  overflow-x: auto;
+  overflow-x: hidden;
   min-height: 0;
 }
 
@@ -192,8 +191,7 @@
 .zonas-table-grid {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
-  min-width: 520px;
+  table-layout: auto;
 }
 
 .zonas-table-grid th {

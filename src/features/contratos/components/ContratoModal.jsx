@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
   FileText, MapPin, Layers, Wrench, Users,
-  Search, X, Plus, Calendar, GitBranch, DollarSign,
+  Search, X, Plus, PlusCircle, Pencil, Calendar, GitBranch, DollarSign,
   AlertCircle, UserCheck, UserX, ChevronDown, ChevronUp, Trash2,
+  ClipboardList, Settings2, UsersRound, FolderOpen, LayoutList,
 } from 'lucide-react';
 import {
   getFincas,
@@ -401,7 +402,12 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
       <div className="modal-overlay">
         <div className="modal-contrato" onClick={e => e.stopPropagation()}>
           <div className="modal-contrato-header">
-            <h3>📋 Detalle del Contrato</h3>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 8, background: 'rgba(59,130,246,0.12)' }}>
+                <FileText size={17} color="#3b82f6" />
+              </span>
+              Detalle del Contrato
+            </h3>
             <button className="modal-close-btn" onClick={onClose}>×</button>
           </div>
           <div className="modal-body">
@@ -483,9 +489,9 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
   // ══ MODO CREAR / EDITAR ════════════════════════════════════════
   const totalMiembros = cuadrillas.reduce((s, c) => s + c.miembros.length, 0);
   const TABS = [
-    { key: 'datos',       label: '📋 Datos' },
-    { key: 'actividades', label: `🔧 Actividades${actividadesSel.length > 0 ? ` (${actividadesSel.length})` : ''}` },
-    { key: 'cuadrilla',   label: `👥 Cuadrillas${modo === 'crear' && totalMiembros > 0 ? ` (${cuadrillas.length})` : ''}` },
+    { key: 'datos',       label: 'datos',       icon: ClipboardList,  texto: 'Datos' },
+    { key: 'actividades', label: 'actividades',  icon: Settings2,      texto: `Actividades${actividadesSel.length > 0 ? ` (${actividadesSel.length})` : ''}` },
+    { key: 'cuadrilla',   label: 'cuadrilla',    icon: UsersRound,     texto: `Cuadrillas${modo === 'crear' && totalMiembros > 0 ? ` (${cuadrillas.length})` : ''}` },
   ];
 
   return (
@@ -493,20 +499,32 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
       <div className="modal-contrato" onClick={e => e.stopPropagation()} style={{ maxWidth: 860, width: '100%' }}>
 
         <div className="modal-contrato-header">
-          <h3>{modo === 'editar' ? '✏️ Editar Contrato' : '➕ Nuevo Contrato'}</h3>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 7, background: modo === 'editar' ? 'rgba(234,179,8,0.12)' : 'rgba(31,143,87,0.12)' }}>
+              {modo === 'editar' ? <Pencil size={14} color="#ca8a04" /> : <PlusCircle size={14} color="#1f8f57" />}
+            </span>
+            {modo === 'editar' ? 'Editar Contrato' : 'Nuevo Contrato'}
+          </h3>
           <button className="modal-close-btn" onClick={onClose}>×</button>
         </div>
 
         {/* Tabs */}
         <div style={{ display:'flex', borderBottom:'1px solid #e6e8ef', padding:'0 24px' }}>
-          {TABS.map(t => (
-            <button key={t.key} onClick={() => setTab(t.key)} style={{
-              padding:'11px 18px', border:'none', background:'none', cursor:'pointer',
-              fontSize:13, fontWeight: tab === t.key ? 700 : 500,
-              color: tab === t.key ? '#1f8f57' : '#64748b',
-              borderBottom: tab === t.key ? '2.5px solid #1f8f57' : '2.5px solid transparent',
-            }}>{t.label}</button>
-          ))}
+          {TABS.map(t => {
+            const TabIcon = t.icon;
+            return (
+              <button key={t.key} onClick={() => setTab(t.key)} style={{
+                padding:'11px 18px', border:'none', background:'none', cursor:'pointer',
+                fontSize:13, fontWeight: tab === t.key ? 700 : 500,
+                color: tab === t.key ? '#1f8f57' : '#64748b',
+                borderBottom: tab === t.key ? '2.5px solid #1f8f57' : '2.5px solid transparent',
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+                <TabIcon size={14} />
+                {t.texto}
+              </button>
+            );
+          })}
         </div>
 
         <div className="modal-body">
@@ -516,7 +534,7 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
           {tab === 'datos' && (
             <>
               <div className="form-section">
-                <p className="form-section-title">🗂️ Subproyecto *</p>
+                <p className="form-section-title" style={{ display:'flex', alignItems:'center', gap:7 }}><FolderOpen size={14} color="#6366f1" /> Subproyecto *</p>
                 <div className="form-field">
                   <select value={form.subproyecto} onChange={e => handleSubproyectoChange(e.target.value)}>
                     <option value="">— Selecciona un subproyecto —</option>
@@ -528,7 +546,7 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
               </div>
 
               <div className="form-section">
-                <p className="form-section-title">📋 Datos básicos</p>
+                <p className="form-section-title" style={{ display:'flex', alignItems:'center', gap:7 }}><LayoutList size={14} color="#3b82f6" /> Datos básicos</p>
                 <div className="form-row">
                   <div className="form-field">
                     <label>Código *</label>
@@ -558,7 +576,7 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
               </div>
 
               <div className="form-section">
-                <p className="form-section-title">📍 Ubicación</p>
+                <p className="form-section-title" style={{ display:'flex', alignItems:'center', gap:7 }}><MapPin size={14} color="#e67e22" /> Ubicación</p>
                 <div className="form-field">
                   <label>Finca *</label>
                   <select value={form.finca} onChange={e => setForm(p => ({ ...p, finca: e.target.value }))}>
@@ -821,7 +839,9 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
                         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 16px', background:'#f8fafc', borderBottom: cua.expandida ? '1px solid #e2e8f0' : 'none', cursor:'pointer' }}
                           onClick={() => toggleExpandida(cuaIdx)}>
                           <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                            <span style={{ fontSize:16 }}>👥</span>
+                            <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:30, height:30, borderRadius:8, background:'rgba(99,102,241,0.1)' }}>
+                              <UsersRound size={15} color="#6366f1" />
+                            </span>
                             <div>
                               <p style={{ margin:0, fontSize:13, fontWeight:700, color:'#0f172a' }}>
                                 {cua.nombre.trim() || `Cuadrilla ${cuaIdx + 1}`}
@@ -851,12 +871,14 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
                                 <label>Nombre *</label>
                                 <input placeholder="Ej: Cuadrilla Norte"
                                   value={cua.nombre}
+                                  style={{ background:'#fff', color:'#0f172a' }}
                                   onChange={e => actualizarCuadrilla(cuaIdx, 'nombre', e.target.value)} />
                               </div>
                               <div className="form-field" style={{ margin:0 }}>
                                 <label>Código *</label>
                                 <input placeholder="Ej: CUA-001"
                                   value={cua.codigo}
+                                  style={{ background:'#fff', color:'#0f172a' }}
                                   onChange={e => actualizarCuadrilla(cuaIdx, 'codigo', e.target.value.toUpperCase())} />
                               </div>
                             </div>
@@ -908,7 +930,7 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
                                   placeholder="Buscar por nombre o cédula..."
                                   value={busqueda}
                                   onChange={e => setBusquedas(prev => ({ ...prev, [cuaIdx]: e.target.value }))}
-                                  style={{ width:'100%', padding:'8px 12px 8px 34px', border:'1.5px solid #e6e8ef', borderRadius:9, fontSize:13, outline:'none', boxSizing:'border-box' }}
+                                  style={{ width:'100%', padding:'8px 12px 8px 34px', border:'1.5px solid #e6e8ef', borderRadius:9, fontSize:13, outline:'none', boxSizing:'border-box', background:'#fff', color:'#0f172a' }}
                                 />
                               </div>
                               {loadingPersonas ? (

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { FilePlus, Eye, Pencil, Trash2, FileText, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { FilePlus, Eye, Pencil, Trash2, FileText, CheckCircle, Clock, XCircle, ScrollText } from 'lucide-react';
 import DashboardLayout from '../../../app/layouts/DashboardLayout';
 import ContratoModal from '../components/ContratoModal';
 import { getContratos, cancelarContrato } from '../services/contratosService';
@@ -111,7 +111,12 @@ export default function ContratosPage() {
 
         <div className="contratos-header">
           <div>
-            <h2>📋 Contratos</h2>
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 10, background: 'rgba(59,130,246,0.12)' }}>
+                <ScrollText size={20} color="#3b82f6" />
+              </span>
+              Contratos
+            </h2>
             <p>Gestión de contratos operativos por finca y cuadrilla</p>
           </div>
         </div>

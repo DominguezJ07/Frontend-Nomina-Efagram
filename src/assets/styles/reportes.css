@@ -20,7 +20,9 @@
 
 /* ── Contenedor ─────────────────────────────────────────────────── */
 .reportes-page {
-  min-height: 100vh;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
   background: var(--r-bg);
   padding: 22px 24px;
   color: var(--r-text);
@@ -193,6 +195,9 @@
   box-shadow: var(--r-shadow);
   margin-bottom: 20px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 380px);
 }
 
 .section-header {
@@ -230,7 +235,10 @@
 
 /* ── Tabla ───────────────────────────────────────────────────────── */
 .reportes-table-wrap {
-  overflow-x: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0;
 }
 
 .reportes-table {

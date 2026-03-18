@@ -5,7 +5,7 @@ import DashboardLayout from "../../../app/layouts/DashboardLayout";
 import "../../../assets/styles/proyectos.css";
 import {
   Users, Building2, Eye, Pencil, Trash2,
-  Phone, Mail, CheckCircle, XCircle,
+  Phone, Mail, CheckCircle, XCircle, Search,
 } from "lucide-react";
 
 // ── Helpers ───────────────────────────────────────────────
@@ -373,7 +373,7 @@ const ClientesPage = () => {
         {/* ── TOOLBAR ── */}
         <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap", alignItems: "center" }}>
           <div style={{ flex: 1, minWidth: 220, position: "relative", display: "flex", alignItems: "center" }}>
-            <span style={{ position: "absolute", left: 14, fontSize: 15, pointerEvents: "none" }}>🔍</span>
+            <Search size={15} style={{ position: "absolute", left: 14, color: "#94a3b8", pointerEvents: "none" }} />
             <input
               type="text"
               placeholder="Buscar por nombre, NIT, código o ciudad..."

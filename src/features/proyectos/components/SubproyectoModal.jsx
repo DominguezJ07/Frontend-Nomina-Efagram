@@ -8,9 +8,9 @@ import { getClientes } from '../services/Clientesservice';
 import { getPersonal } from '../services/personalService';
 import httpClient from '../../../core/api/httpClient';
 import {
-  Folder, User, MapPin, Package,
-  Plus, Trash2, ChevronDown, ChevronUp,
-  AlertCircle, CheckCircle2, Lock
+  FolderGit2, User, MapPin, Package,
+  Plus, PlusCircle, Pencil, Trash2, ChevronDown, ChevronUp,
+  AlertCircle, CheckCircle2, Lock, ClipboardList, Target
 } from 'lucide-react';
 
 const BarraProgreso = ({ asignado, total, label }) => {
@@ -236,6 +236,7 @@ const SubproyectoModal = ({ isOpen, onClose, onSuccess, subproyecto = null, proy
   return (
     <div className="modal-overlay">
       <div
+        className="modal"
         style={{
           width: 'min(760px, calc(100% - 24px))',
           background: '#fff',
@@ -250,12 +251,15 @@ const SubproyectoModal = ({ isOpen, onClose, onSuccess, subproyecto = null, proy
       >
         {/* ── Header ── */}
         <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid #f0f2f5', display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Folder size={22} color="#3b82f6" />
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(99,102,241,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <FolderGit2 size={22} color="#6366f1" />
           </div>
           <div style={{ flex: 1 }}>
-            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#0f172a' }}>
-              {modoEditar ? '✏️ Editar Subproyecto' : '➕ Nuevo Subproyecto'}
+            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 7, background: modoEditar ? 'rgba(234,179,8,0.12)' : 'rgba(31,143,87,0.12)' }}>
+                {modoEditar ? <Pencil size={14} color="#ca8a04" /> : <PlusCircle size={14} color="#1f8f57" />}
+              </span>
+              {modoEditar ? 'Editar Subproyecto' : 'Nuevo Subproyecto'}
             </h3>
             <p style={{ margin: '2px 0 0', fontSize: 13, color: '#64748b' }}>
               Proyecto: <strong>{proyecto?.nombre}</strong> ({proyecto?.codigo})
@@ -278,7 +282,8 @@ const SubproyectoModal = ({ isOpen, onClose, onSuccess, subproyecto = null, proy
               cursor: 'pointer', transition: 'all 0.2s',
             }}
           >
-            📋 Información General
+            <ClipboardList size={15} style={{ display: 'inline', marginRight: 6, verticalAlign: 'middle' }} />
+            Información General
           </button>
           <button
             onClick={() => setTabActiva('actividades')}
@@ -291,7 +296,8 @@ const SubproyectoModal = ({ isOpen, onClose, onSuccess, subproyecto = null, proy
               cursor: modoEditar ? 'pointer' : 'not-allowed', transition: 'all 0.2s',
             }}
           >
-            🎯 Asignar Actividades {!modoEditar && '(guarda primero)'}
+            <Target size={15} style={{ display: 'inline', marginRight: 6, verticalAlign: 'middle' }} />
+            Asignar Actividades {!modoEditar && '(guarda primero)'}
           </button>
         </div>
 

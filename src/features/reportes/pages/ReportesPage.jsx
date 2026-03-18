@@ -383,9 +383,19 @@ export default function ReportesPage() {
 
         {/* Header */}
         <div className="reportes-header">
-          <div>
-            <h1>📊 Reportes Generales</h1>
-            <p>Avance de metas, producción por actividad y nómina del período seleccionado</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{
+              width: 46, height: 46, borderRadius: 12,
+              background: 'linear-gradient(135deg, #1f8f57 0%, #16a34a 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0, boxShadow: '0 4px 12px rgba(31,143,87,0.3)',
+            }}>
+              <BarChart3 size={24} color="#fff" strokeWidth={2} />
+            </div>
+            <div>
+              <h1 style={{ margin: 0 }}>Reportes Generales</h1>
+              <p>Avance de metas, producción por actividad y nómina del período seleccionado</p>
+            </div>
           </div>
         </div>
 

@@ -4,7 +4,7 @@ import {
     LayoutDashboard, BarChart3, Play, Folder,
     Users, CheckSquare, ChevronDown, Layers, Building,
     AlertTriangle, Calendar, Clock,
-    Settings, MapPin, Wrench, GitBranch, FileText, Activity
+    Settings, MapPin, Wrench, GitBranch, FileText, Activity, Briefcase
 } from "lucide-react";
 import "./sidebar.css";
 
@@ -173,6 +173,13 @@ export default function Sidebar() {
                             onClick={() => navigate("/configuracion/catalogo-personal")}
                         >
                             <Users size={16} />Catálogo Personal
+                        </div>
+
+                        <div
+                            className={`submenu-item ${isActiveSub("/configuracion/catalogo-cargos")}`}
+                            onClick={() => navigate("/configuracion/catalogo-cargos")}
+                        >
+                            <Briefcase size={16} />Catálogo Cargos
                         </div>
 
                         {/* ── Ubicación ── */}
