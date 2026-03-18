@@ -12,19 +12,18 @@ import SemanasOperativasPage from '../../features/ejecucion/pages/SemanasOperati
 import ProyectosPage from '../../features/proyectos/pages/ProyectosPage';
 import ClientesPage from '../../features/proyectos/pages/ClientesPage';
 import CatalogoActividadesPage from '../../features/proyectos/pages/CatalogoActividadesPage';
-import CatalogoPersonalPage from "../../features/proyectos/pages/CatalogoPersonalPage";
+import CatalogoPersonalPage from '../../features/proyectos/pages/CatalogoPersonalPage';
 
 // Configuración → Ubicación (antes Territorial)
 import ZonasPage from '../../features/territorial/pages/ZonasPage';
 import NucleosPage from '../../features/territorial/pages/NucleosPage';
 import FincasPage from '../../features/territorial/pages/FincasPage';
 
-import CatalogoIntervencionesPage from "../../features/proyectos/pages/CatalogoIntervencionesPage";
-import CatalogoProcesosPage from "../../features/proyectos/pages/CatalogoProcesosPage";
-import CatalogoCargosPage from "../../features/proyectos/pages/CatalogoCargosPage";
-import SubproyectosPage from "../../features/proyectos/pages/SubproyectosPage";
+import CatalogoIntervencionesPage from '../../features/proyectos/pages/CatalogoIntervencionesPage';
+import CatalogoProcesosPage from '../../features/proyectos/pages/CatalogoProcesosPage';
+import SubproyectosPage from '../../features/proyectos/pages/SubproyectosPage';
 
-// Contratos (AHORA DENTRO DE PROYECTOS)
+// Contratos (DENTRO DE PROYECTOS)
 import ContratosPage from '../../features/contratos/pages/ContratosPage';
 
 // Programación
@@ -32,6 +31,9 @@ import ProgramacionPage from '../../features/programacion/pages/ProgramacionPage
 
 // Reportes
 import ReportesPage from '../../features/reportes/pages/ReportesPage';
+
+// Cargos
+import CatalogoCargosPage from '../../features/proyectos/pages/CatalogoCargosPage';
 
 export default function AppRouter() {
   return (
@@ -54,6 +56,7 @@ export default function AppRouter() {
       {/* ─── PROGRAMACIÓN ─── */}
       <Route path="/programacion" element={<PrivateRoute><ProgramacionPage /></PrivateRoute>} />
 
+      {/* ─── CONFIGURACIÓN ─── */}
       <Route path="/configuracion/catalogo-clientes" element={<PrivateRoute><ClientesPage /></PrivateRoute>} />
       <Route path="/configuracion/catalogo-actividades" element={<PrivateRoute><CatalogoActividadesPage /></PrivateRoute>} />
       <Route path="/configuracion/catalogo-intervenciones" element={<PrivateRoute><CatalogoIntervencionesPage /></PrivateRoute>} />

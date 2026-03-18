@@ -1,14 +1,17 @@
 .sidebar {
   width: 260px;
-  height: 100vh;                /* 🔥 ocupa toda la pantalla */
+  height: 100vh;
+  /* 🔥 ocupa toda la pantalla */
   background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
   color: white;
   display: flex;
   flex-direction: column;
   padding: 20px;
-  overflow-y: auto;             /* 🔥 scroll vertical */
+  overflow-y: auto;
+  /* 🔥 scroll vertical */
   overflow-x: hidden;
-  position: fixed;              /* 🔥 fijo a la izquierda */
+  position: fixed;
+  /* 🔥 fijo a la izquierda */
   left: 0;
   top: 0;
 }
@@ -20,19 +23,19 @@
   display: flex;
   gap: 12px;
   align-items: center;
-  margin-bottom: -22px; 
+  margin-bottom: -22px;
 }
 
-
 .logo-icon {
-  width: 44px;
-  height: 44px;
-  background: #16a34a;
-  border-radius: 14px;
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.35);
 }
 
 .sidebar-header h2 {
@@ -52,7 +55,7 @@
 .sidebar hr {
   border: none;
   height: 1px;
-  background: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
   margin: 16px 0;
 }
 
@@ -92,7 +95,7 @@
 }
 
 .menu-item:hover {
-  background: rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .menu-item:hover .arrow {
@@ -102,7 +105,7 @@
 /* ACTIVO */
 
 .menu-item.active {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .menu-item.active::before {
@@ -123,7 +126,7 @@
   align-items: center;
   gap: 12px;
   padding-top: 20px;
-  border-top: 1px solid rgba(255,255,255,0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .user-avatar {
@@ -152,7 +155,7 @@
   margin-left: 34px;
   margin-top: 6px;
   padding-left: 14px;
-  border-left: 1px solid rgba(255,255,255,0.08);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -190,6 +193,7 @@
     opacity: 0;
     transform: translateY(-4px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -218,7 +222,7 @@
   margin-left: 16px;
   margin-top: 2px;
   padding-left: 10px;
-  border-left: 1px solid rgba(255,255,255,0.06);
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
   gap: 10px;
 }
 

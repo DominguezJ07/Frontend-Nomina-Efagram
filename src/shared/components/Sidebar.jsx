@@ -12,37 +12,42 @@ export default function Sidebar() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const isEjecucion = location.pathname.startsWith("/ejecucion");
-    const isProyectos = location.pathname.startsWith("/proyectos");
-    const isProgramacion = location.pathname.startsWith("/programacion");
+    const isEjecucion     = location.pathname.startsWith("/ejecucion");
+    const isProyectos     = location.pathname.startsWith("/proyectos");
+    const isProgramacion  = location.pathname.startsWith("/programacion");
     const isConfiguracion = location.pathname.startsWith("/configuracion");
-    const isReportes = location.pathname.startsWith("/reportes");
+    const isReportes      = location.pathname.startsWith("/reportes");
 
-    const [manualEjecucion, setManualEjecucion] = useState(null);
-    const [manualProyectos, setManualProyectos] = useState(null);
+    const [manualEjecucion,     setManualEjecucion]     = useState(null);
+    const [manualProyectos,     setManualProyectos]     = useState(null);
     const [manualConfiguracion, setManualConfiguracion] = useState(null);
-    const [openReportes, setOpenReportes] = useState(false);
+    const [openReportes,        setOpenReportes]        = useState(false);
 
     const [openUbicacion, setOpenUbicacion] = useState(
         location.pathname.startsWith("/configuracion/ubicacion")
     );
 
-    const openEjecucion = manualEjecucion !== null ? manualEjecucion : isEjecucion;
-    const openProyectos = manualProyectos !== null ? manualProyectos : isProyectos;
+    const openEjecucion     = manualEjecucion     !== null ? manualEjecucion     : isEjecucion;
+    const openProyectos     = manualProyectos     !== null ? manualProyectos     : isProyectos;
     const openConfiguracion = manualConfiguracion !== null ? manualConfiguracion : isConfiguracion;
 
-    const toggleEjecucion = () => setManualEjecucion(!openEjecucion);
-    const toggleProyectos = () => setManualProyectos(!openProyectos);
+    const toggleEjecucion     = () => setManualEjecucion(!openEjecucion);
+    const toggleProyectos     = () => setManualProyectos(!openProyectos);
     const toggleConfiguracion = () => setManualConfiguracion(!openConfiguracion);
 
-    const isActive = (path) => location.pathname === path;
+    const isActive    = (path) => location.pathname === path;
     const isActiveSub = (path) => location.pathname === path ? "submenu-active" : "";
 
     return (
         <aside className="sidebar">
 
             <div className="sidebar-header">
-                <div className="logo-icon"><span>🌿</span></div>
+                <div className="logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 3C21 3 13 3 8 8c-3.5 3.5-4 9-4 9s5.5-.5 9-4c1.2-1.2 2.1-2.6 2.7-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M3 21c2-2 4-6 5-9" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                </div>
                 <div><h2>EFAGRAM S.A.S</h2><p>Sistema de Gestión</p></div>
             </div>
 
@@ -96,7 +101,7 @@ export default function Sidebar() {
                     </div>
                 )}
 
-                {/* ── PROGRAMACIÓN (NUEVO) ── */}
+                {/* ── PROGRAMACIÓN ── */}
                 <div
                     className={`menu-item ${isProgramacion ? "active" : ""}`}
                     onClick={() => navigate("/programacion")}

@@ -17,9 +17,9 @@ export default function CatalogoCargosPage() {
   const [error,   setError]   = useState(null);
 
   const normalizeList = (res) => {
-    if (Array.isArray(res))             return res;
-    if (Array.isArray(res?.data))       return res.data;
-    if (Array.isArray(res?.data?.data)) return res.data.data;
+    if (Array.isArray(res))            return res;
+    if (Array.isArray(res?.data))      return res.data;
+    if (Array.isArray(res?.data?.data))return res.data.data;
     return [];
   };
 
@@ -56,7 +56,7 @@ export default function CatalogoCargosPage() {
 
   const handleAdd = async (payload) => {
     const created = await createCargo(payload);
-    const obj = created?.data ?? created;
+    const obj = created?.data?.data ?? created?.data ?? created;
     if (obj && (obj._id || obj.id)) {
       setCargos((prev) => [obj, ...prev]);
     } else {
@@ -66,7 +66,7 @@ export default function CatalogoCargosPage() {
 
   const handleUpdate = async (id, payload) => {
     const updated = await updateCargo(id, payload);
-    const obj = updated?.data ?? updated;
+    const obj = updated?.data?.data ?? updated?.data ?? updated;
     if (obj && (obj._id || obj.id)) {
       setCargos((prev) => prev.map((c) => (getId(c) === id ? obj : c)));
     } else {

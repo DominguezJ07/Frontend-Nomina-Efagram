@@ -1,5 +1,28 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer } from 'react';
 import { X } from 'lucide-react';
+
+const INITIAL_STATE = {
+  codigo:  '',
+  nombre:  '',
+  activo:  true,
+  saving:  false,
+  error:   null,
+};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'SET_FIELD':
+      return { ...state, [action.field]: action.value };
+    case 'RESET':
+      return { ...INITIAL_STATE, ...action.values };
+    case 'SET_SAVING':
+      return { ...state, saving: action.value };
+    case 'SET_ERROR':
+      return { ...state, error: action.value };
+    default:
+      return state;
+  }
+}
 
 export default function NuevoCargoModal({
   isOpen,
@@ -8,65 +31,70 @@ export default function NuevoCargoModal({
   onClose,
   onSubmit,
 }) {
-  const [codigo,      setCodigo]      = useState('');
-  const [nombre,      setNombre]      = useState('');
-  const [descripcion, setDescripcion] = useState('');
-  const [estado,      setEstado]      = useState(true);
-  const [saving,      setSaving]      = useState(false);
-  const [error,       setError]       = useState(null);
+  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
 
+  const setField = (field) => (e) =>
+    dispatch({ type: 'SET_FIELD', field, value: e.target.value });
+
+  // UN solo dispatch — sin renders en cascada
   useEffect(() => {
     if (!isOpen) return;
-    setCodigo(initialValues?.codigo ?? '');
-    setNombre(initialValues?.nombre ?? '');
-    setDescripcion(initialValues?.descripcion ?? '');
-    const estadoValue = initialValues?.estado;
-    setEstado(typeof estadoValue === 'boolean' ? estadoValue : true);
-    setError(null);
-    setSaving(false);
+    const activoValue = initialValues?.activo ?? initialValues?.estado;
+    dispatch({
+      type: 'RESET',
+      values: {
+        codigo: initialValues?.codigo ?? '',
+        nombre: initialValues?.nombre ?? '',
+        activo: typeof activoValue === 'boolean' ? activoValue : true,
+        saving: false,
+        error:  null,
+      },
+    });
   }, [isOpen, initialValues]);
 
   if (!isOpen) return null;
 
   const isEdit = title.toLowerCase().includes('editar');
 
+  // Solo dígitos en el código
+  const handleCodigo = (e) => {
+    const val = e.target.value.replace(/\D/g, '');
+    dispatch({ type: 'SET_FIELD', field: 'codigo', value: val });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
+    dispatch({ type: 'SET_ERROR', value: null });
 
-    const payload = {
-      codigo:      String(codigo).trim(),
-      nombre:      String(nombre).trim(),
-      descripcion: String(descripcion).trim(),
-      estado:      Boolean(estado),
-    };
-
-    if (!payload.codigo || !payload.nombre) {
-      setError('Código y nombre son obligatorios');
+    if (!state.codigo.toString().trim() || !state.nombre.trim()) {
+      dispatch({ type: 'SET_ERROR', value: 'Código y nombre son obligatorios' });
       return;
     }
 
+    const payload = {
+      codigo: Number(state.codigo),
+      nombre: state.nombre.trim(),
+      activo: Boolean(state.activo),
+    };
+
     try {
-      setSaving(true);
+      dispatch({ type: 'SET_SAVING', value: true });
       await onSubmit?.(payload);
     } catch (err) {
       console.error(err);
-      setError(err?.response?.data?.message || 'No se pudo guardar');
-      setSaving(false);
+      dispatch({ type: 'SET_ERROR', value: err?.response?.data?.message || 'No se pudo guardar' });
+      dispatch({ type: 'SET_SAVING', value: false });
     }
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} />
+    <div className="modal-backdrop" onClick={onClose}>
       <div
         className="modal"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        style={{ position: 'relative', zIndex: 1 }}
       >
-        {/* HEADER */}
         <div className="modal-header">
           <div>
             <h3 className="modal-title">{title}</h3>
@@ -77,71 +105,52 @@ export default function NuevoCargoModal({
           </button>
         </div>
 
-        {/* BODY */}
         <form className="modal-body" onSubmit={handleSubmit}>
+
+          {/* Código — solo números */}
           <label className="field">
             <span>Código *</span>
             <input
-              value={codigo}
-              onChange={(e) => setCodigo(e.target.value)}
-              placeholder="Ej: OPERARIO"
+              value={state.codigo}
+              onChange={handleCodigo}
+              placeholder="Ej: 1"
+              inputMode="numeric"
               autoFocus
             />
           </label>
 
+          {/* Nombre */}
           <label className="field">
             <span>Nombre *</span>
             <input
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              placeholder="Ej: Operario de Campo"
+              value={state.nombre}
+              onChange={setField('nombre')}
+              placeholder="Ej: Operario"
             />
           </label>
 
+          {/* Estado */}
           <label className="field">
-            <span>Descripción</span>
-            <textarea
-              value={descripcion}
-              onChange={(e) => setDescripcion(e.target.value)}
-              placeholder="Descripción del cargo"
-              rows="3"
-              style={{
-                padding: '12px 14px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '10px',
-                fontSize: '14px',
-                color: '#111827',
-                background: '#fff',
-                outline: 'none',
-                transition: 'border-color 0.2s',
-                width: '100%',
-                boxSizing: 'border-box',
-                fontFamily: 'inherit',
-                resize: 'vertical',
-              }}
-            />
-          </label>
-
-          <label className="field">
-            <span>Estado *</span>
+            <span>Estado</span>
             <select
-              value={estado ? 'true' : 'false'}
-              onChange={(e) => setEstado(e.target.value === 'true')}
+              value={state.activo ? 'true' : 'false'}
+              onChange={(e) =>
+                dispatch({ type: 'SET_FIELD', field: 'activo', value: e.target.value === 'true' })
+              }
             >
               <option value="true">Activo</option>
               <option value="false">Inactivo</option>
             </select>
           </label>
 
-          {error && <div className="form-error">{error}</div>}
+          {state.error && <div className="form-error">{state.error}</div>}
 
-          {/* ACCIONES */}
           <div className="modal-actions">
             <button className="btn-modal-cancel" type="button" onClick={onClose}>
               Cancelar
             </button>
-            <button className="btn-modal-submit" type="submit" disabled={saving}>
-              {saving ? 'Guardando…' : isEdit ? 'Guardar' : 'Crear'}
+            <button className="btn-modal-submit" type="submit" disabled={state.saving}>
+              {state.saving ? 'Guardando…' : isEdit ? 'Guardar' : 'Crear'}
             </button>
           </div>
         </form>

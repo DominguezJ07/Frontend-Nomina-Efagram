@@ -1,18 +1,8 @@
 import { Briefcase, CheckCircle, XCircle } from 'lucide-react';
 
 export default function CargosStats({ cargos = [] }) {
-  const total = cargos.length;
-
-  const activos = cargos.filter((c) => {
-    if (typeof c?.activo === 'boolean') return c.activo;
-    if (typeof c?.estado === 'boolean') return c.estado;
-    if (typeof c?.estado === 'string') {
-      const est = c.estado.toLowerCase().trim();
-      return est === 'activo' || est === 'active' || est === 'true' || est === '1';
-    }
-    return true;
-  }).length;
-
+  const total    = cargos.length;
+  const activos  = cargos.filter((c) => c?.activo !== false).length;
   const inactivos = total - activos;
 
   return (

@@ -1,22 +1,14 @@
 import { useState } from 'react';
-import { Eye, Pencil, Plus, Search, Briefcase, X, Trash2 } from 'lucide-react';
+import { Briefcase, Eye, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
 import NuevoCargoModal from './NuevoCargoModal';
 
 function CargoDetalleModal({ isOpen, cargo, onClose }) {
   if (!isOpen || !cargo) return null;
-
-  let isActive = false;
-  const raw = cargo?.estado;
-  if (typeof cargo?.activo === 'boolean') isActive = cargo.activo;
-  else if (typeof raw === 'boolean') isActive = raw;
-  else if (typeof raw === 'string') {
-    const v = raw.toLowerCase().trim();
-    isActive = v === 'activo' || v === 'active' || v === 'true' || v === '1';
-  }
+  const isActive = cargo?.activo !== false;
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 900 }}>
-      <div className="zdm-overlay" style={{ pointerEvents: 'none' }} />
+    <>
+      <div className="zdm-overlay" onClick={onClose} />
       <div className="zdm-panel" role="dialog" aria-modal="true">
         <button className="zdm-close" onClick={onClose} aria-label="Cerrar">
           <X size={15} />
@@ -31,27 +23,17 @@ function CargoDetalleModal({ isOpen, cargo, onClose }) {
           </div>
           <div className="zdm-name-info">
             <span className="zdm-name">{cargo?.nombre ?? '-'}</span>
-            <span className="zdm-code">{cargo?.codigo ?? '-'}</span>
+            <span className="zdm-code">Código: {cargo?.codigo ?? '-'}</span>
           </div>
         </div>
-
         <div className="zdm-estado-box">
           <span className="zdm-estado-label">Estado</span>
           <span className={isActive ? 'zdm-badge active' : 'zdm-badge inactive'}>
             {isActive ? '⊙ Activo' : '⊗ Inactivo'}
           </span>
         </div>
-
-        {cargo?.descripcion && (
-          <div className="zdm-estado-box" style={{ marginTop: '10px' }}>
-            <span className="zdm-estado-label">Descripción</span>
-            <span style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.5' }}>
-              {cargo.descripcion}
-            </span>
-          </div>
-        )}
       </div>
-    </div>
+    </>
   );
 }
 
@@ -63,8 +45,8 @@ export default function CargosTable({
   onUpdate,
   onDelete,
 }) {
-  const [openCreate, setOpenCreate]   = useState(false);
-  const [editCargo,  setEditCargo]    = useState(null);
+  const [openCreate,   setOpenCreate]   = useState(false);
+  const [editCargo,    setEditCargo]    = useState(null);
   const [detalleCargo, setDetalleCargo] = useState(null);
 
   const getId = (c) => c?._id ?? c?.id;
@@ -77,12 +59,13 @@ export default function CargosTable({
 
   return (
     <div className="zonas-card">
+
       {/* HEADER */}
       <div className="zonas-card-header">
         <h2 className="zonas-card-title">Catálogo de Cargos</h2>
       </div>
 
-      {/* BARRA BÚSQUEDA + BOTÓN */}
+      {/* BÚSQUEDA + BOTÓN */}
       <div style={{ display: 'flex', gap: '12px', padding: '0 0 16px 0', alignItems: 'center' }}>
         <div className="zonas-search" style={{ flex: 1 }}>
           <Search size={16} />
@@ -103,9 +86,8 @@ export default function CargosTable({
         <table className="zonas-table-grid">
           <thead>
             <tr>
-              <th style={{ width: '140px' }}>Código</th>
-              <th style={{ width: '200px' }}>Nombre</th>
-              <th style={{ width: '300px' }}>Descripción</th>
+              <th style={{ width: '120px' }}>Código</th>
+              <th>Nombre</th>
               <th style={{ width: '120px' }}>Estado</th>
               <th style={{ width: '140px', textAlign: 'center' }}>Acciones</th>
             </tr>
@@ -113,24 +95,14 @@ export default function CargosTable({
           <tbody>
             {cargos.length === 0 ? (
               <tr>
-                <td colSpan={5} className="zonas-empty">
+                <td colSpan={4} className="zonas-empty">
                   No hay cargos para mostrar
                 </td>
               </tr>
             ) : (
               cargos.map((c) => {
                 const id = getId(c);
-
-                let isActive = false;
-                if (c?.activo !== undefined) {
-                  isActive = Boolean(c.activo);
-                } else if (c?.estado !== undefined && c?.estado !== null) {
-                  if (typeof c.estado === 'boolean') isActive = c.estado;
-                  else if (typeof c.estado === 'string') {
-                    const est = c.estado.toLowerCase().trim();
-                    isActive = est === 'activo' || est === 'active' || est === 'true' || est === '1';
-                  } else if (typeof c.estado === 'number') isActive = c.estado === 1;
-                }
+                const isActive = c?.activo !== false;
 
                 return (
                   <tr key={id}>
@@ -144,9 +116,6 @@ export default function CargosTable({
                         </span>
                         {c?.nombre ?? '-'}
                       </div>
-                    </td>
-                    <td style={{ fontSize: '13px', color: '#6b7280' }}>
-                      {c?.descripcion ?? '-'}
                     </td>
                     <td>
                       <span className={isActive ? 'badge-active' : 'badge-inactive'}>
@@ -195,10 +164,11 @@ export default function CargosTable({
         onClose={() => setDetalleCargo(null)}
       />
 
+      {/* Modal crear */}
       <NuevoCargoModal
         isOpen={openCreate}
-        title="Nuevo cargo"
-        initialValues={{ codigo: '', nombre: '', descripcion: '', estado: true }}
+        title="Nuevo Cargo"
+        initialValues={{ codigo: '', nombre: '', activo: true }}
         onClose={() => setOpenCreate(false)}
         onSubmit={async (values) => {
           await onAdd?.(values);
@@ -206,18 +176,14 @@ export default function CargosTable({
         }}
       />
 
+      {/* Modal editar */}
       <NuevoCargoModal
         isOpen={!!editCargo}
-        title="Editar cargo"
+        title="Editar Cargo"
         initialValues={{
-          codigo:      editCargo?.codigo      ?? '',
-          nombre:      editCargo?.nombre      ?? '',
-          descripcion: editCargo?.descripcion ?? '',
-          estado: typeof editCargo?.activo === 'boolean'
-            ? editCargo.activo
-            : typeof editCargo?.estado === 'boolean'
-              ? editCargo.estado
-              : editCargo?.estado === 'Activo' || editCargo?.estado === 'activo',
+          codigo: editCargo?.codigo ?? '',
+          nombre: editCargo?.nombre ?? '',
+          activo: editCargo?.activo !== false,
         }}
         onClose={() => setEditCargo(null)}
         onSubmit={async (values) => {
