@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Save, AlertCircle, CheckCircle2, Calendar, Hash } from 'lucide-react';
+import { X, Save, AlertCircle, CheckCircle2, Calendar, Hash, ClipboardList, PauseCircle } from 'lucide-react';
 import programacionService from '../services/programacionService';
 
 const ESTADO_COLOR = {
@@ -7,6 +7,17 @@ const ESTADO_COLOR = {
   PENDIENTE:  { bg: '#fef9c3', color: '#ca8a04', label: 'Pendiente'  },
   SIN_DATOS:  { bg: '#f1f5f9', color: '#64748b', label: 'Sin datos'  },
 };
+
+const MOTIVOS_DETENCION = [
+  { value: '',              label: '— Seleccionar motivo —' },
+  { value: 'lluvia',        label: '🌧 Lluvia' },
+  { value: 'trafico',       label: '🚧 Tráfico en la vía' },
+  { value: 'falla_equipo',  label: '⚙️ Falla de equipo' },
+  { value: 'accidente',     label: '🚨 Accidente' },
+  { value: 'orden_cliente', label: '📋 Orden del cliente' },
+  { value: 'descanso',      label: '☕ Descanso no programado' },
+  { value: 'otro',          label: '📝 Otro' },
+];
 
 export default function ModalRegistroEjecucion({ isOpen, onClose, programacion }) {
   const [dias,         setDias]         = useState([]);
@@ -54,6 +65,19 @@ export default function ModalRegistroEjecucion({ isOpen, onClose, programacion }
     setDias(prev => prev.map((d, i) => i === index ? { ...d, observaciones: valor } : d));
   };
 
+  const handleCambiarTiempoDetenido = (index, valor) => {
+    const horas = parseFloat(valor) || 0;
+    setDias(prev => prev.map((d, i) => i === index ? { ...d, tiempo_detenido: horas } : d));
+  };
+
+  const handleCambiarMotivoDetencion = (index, valor) => {
+    setDias(prev => prev.map((d, i) => i === index ? { ...d, motivo_detencion: valor } : d));
+  };
+
+  const handleCambiarMotivoPersonalizado = (index, valor) => {
+    setDias(prev => prev.map((d, i) => i === index ? { ...d, motivo_detencion_otro: valor } : d));
+  };
+
   const totalEjecutado = dias.reduce((s, d) => s + (d.cantidad_ejecutada || 0), 0);
   const cantProyectada = metaPrograma?.cantidad_proyectada || programacion?.cantidad_proyectada || 1;
   const porcentaje     = Math.min(200, Math.round((totalEjecutado / cantProyectada) * 100));
@@ -64,9 +88,12 @@ export default function ModalRegistroEjecucion({ isOpen, onClose, programacion }
       setGuardando(true);
       setError(null);
       const registrosActualizar = dias.map(d => ({
-        id:                 d._id,
-        cantidad_ejecutada: d.cantidad_ejecutada ?? 0,
-        observaciones:      d.observaciones      ?? '',
+        id:                       d._id,
+        cantidad_ejecutada:       d.cantidad_ejecutada        ?? 0,
+        observaciones:            d.observaciones             ?? '',
+        tiempo_detenido:          d.tiempo_detenido           ?? 0,
+        motivo_detencion:         d.motivo_detencion          ?? '',
+        motivo_detencion_otro:    d.motivo_detencion_otro     ?? '',
       }));
       const response = await programacionService.updateMultiplesRegistros(registrosActualizar);
       if (response?.success) {
@@ -120,7 +147,8 @@ export default function ModalRegistroEjecucion({ isOpen, onClose, programacion }
         }}>
           <div>
             <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: '#111827', display: 'flex', alignItems: 'center', gap: 8 }}>
-              📋 Registrar Ejecución — Contrato {programacion?.contrato?.codigo || programacion?.contrato}
+              <ClipboardList size={20} style={{ color: '#16a34a', flexShrink: 0 }} />
+              Registrar Ejecución — Contrato {programacion?.contrato?.codigo || programacion?.contrato}
             </h3>
             <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6b7280' }}>
               {[programacion?.finca?.nombre, programacion?.actividad?.nombre].filter(Boolean).join(' · ')}
@@ -312,6 +340,103 @@ export default function ModalRegistroEjecucion({ isOpen, onClose, programacion }
                           background: '#fff',
                         }}
                       />
+                    </div>
+
+                    {/* Separador jornada detenida */}
+                    <div style={{
+                      margin: '12px 0 10px',
+                      borderTop: '1px dashed #e5e7eb',
+                      paddingTop: 10,
+                    }}>
+                      <p style={{
+                        margin: '0 0 8px', fontSize: 11, fontWeight: 700,
+                        color: '#b45309', textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        display: 'flex', alignItems: 'center', gap: 5,
+                      }}>
+                        <PauseCircle size={12} />
+                        Jornada detenida
+                      </p>
+
+                      {/* Tiempo detenido */}
+                      <div style={{ marginBottom: 8 }}>
+                        <label style={{
+                          display: 'block', fontSize: 12,
+                          fontWeight: 600, color: '#6b7280', marginBottom: 5,
+                        }}>
+                          Tiempo detenido (horas)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="24"
+                          step="0.5"
+                          value={dia.tiempo_detenido || ''}
+                          onChange={e => handleCambiarTiempoDetenido(index, e.target.value)}
+                          disabled={guardando}
+                          placeholder="0"
+                          style={{
+                            width: '100%', padding: '8px 12px',
+                            border: '1.5px solid #fcd34d', borderRadius: 8,
+                            fontSize: 14, fontWeight: 600, color: '#92400e',
+                            outline: 'none', boxSizing: 'border-box',
+                            background: '#fffbeb',
+                          }}
+                        />
+                      </div>
+
+                      {/* Motivo de detención */}
+                      <div style={{ marginBottom: dia.motivo_detencion === 'otro' ? 8 : 0 }}>
+                        <label style={{
+                          display: 'block', fontSize: 12,
+                          fontWeight: 600, color: '#6b7280', marginBottom: 5,
+                        }}>
+                          Motivo de detención
+                        </label>
+                        <select
+                          value={dia.motivo_detencion || ''}
+                          onChange={e => handleCambiarMotivoDetencion(index, e.target.value)}
+                          disabled={guardando}
+                          style={{
+                            width: '100%', padding: '8px 12px',
+                            border: '1.5px solid #fcd34d', borderRadius: 8,
+                            fontSize: 12, color: dia.motivo_detencion ? '#92400e' : '#9ca3af',
+                            outline: 'none', boxSizing: 'border-box',
+                            background: '#fffbeb', fontFamily: 'inherit',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {MOTIVOS_DETENCION.map(m => (
+                            <option key={m.value} value={m.value}>{m.label}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Campo libre si seleccionó "Otro" */}
+                      {dia.motivo_detencion === 'otro' && (
+                        <div>
+                          <label style={{
+                            display: 'block', fontSize: 12,
+                            fontWeight: 600, color: '#6b7280', marginBottom: 5,
+                          }}>
+                            Especificar motivo
+                          </label>
+                          <input
+                            type="text"
+                            value={dia.motivo_detencion_otro || ''}
+                            onChange={e => handleCambiarMotivoPersonalizado(index, e.target.value)}
+                            disabled={guardando}
+                            placeholder="Describe el motivo..."
+                            style={{
+                              width: '100%', padding: '8px 12px',
+                              border: '1.5px solid #fcd34d', borderRadius: 8,
+                              fontSize: 12, color: '#92400e',
+                              outline: 'none', boxSizing: 'border-box',
+                              background: '#fffbeb', fontFamily: 'inherit',
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
