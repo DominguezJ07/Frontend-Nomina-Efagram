@@ -105,6 +105,7 @@ const ProyectoModal = ({ isOpen, onClose, onSuccess, proyecto = null, modo = "cr
   }), []);
 
   const [form, setForm] = useState(initialForm);
+  const [displayFechas, setDisplayFechas] = useState({ fecha_inicio: '', fecha_fin_estimada: '' });
 
   useEffect(() => {
     if (!isOpen) return;
@@ -121,6 +122,15 @@ const ProyectoModal = ({ isOpen, onClose, onSuccess, proyecto = null, modo = "cr
         tipo_contrato: proyecto.tipo_contrato ?? "FIJO_TODO_COSTO",
         avance: proyecto.avance ?? 0,
         descripcion: proyecto.descripcion ?? "",
+      });
+      const toDisplay = (iso) => {
+        if (!iso) return '';
+        const [y, m, d] = iso.slice(0, 10).split('-');
+        return `${d}/${m}/${y}`;
+      };
+      setDisplayFechas({
+        fecha_inicio:       toDisplay(proyecto.fecha_inicio),
+        fecha_fin_estimada: toDisplay(proyecto.fecha_fin_estimada),
       });
 
       const bloquesMigrados = [];
@@ -151,6 +161,7 @@ const ProyectoModal = ({ isOpen, onClose, onSuccess, proyecto = null, modo = "cr
       setIntervenciones(bloquesMigrados);
     } else {
       setForm(initialForm);
+      setDisplayFechas({ fecha_inicio: '', fecha_fin_estimada: '' });
       setIntervenciones([]);
     }
 
@@ -485,11 +496,49 @@ const ProyectoModal = ({ isOpen, onClose, onSuccess, proyecto = null, modo = "cr
             <div className="modal-grid">
               <div className="form-group">
                 <label>Fecha Inicio</label>
-                <input type="date" name="fecha_inicio" value={form.fecha_inicio} onChange={handleChange} />
+                <input
+                  type="text"
+                  placeholder="DD/MM/AAAA"
+                  maxLength={10}
+                  value={displayFechas.fecha_inicio}
+                  onChange={e => {
+                    const raw = e.target.value.replace(/[^0-9]/g, '').slice(0, 8);
+                    let display = raw;
+                    if (raw.length > 4) display = raw.slice(0,2) + '/' + raw.slice(2,4) + '/' + raw.slice(4);
+                    else if (raw.length > 2) display = raw.slice(0,2) + '/' + raw.slice(2);
+                    setDisplayFechas(p => ({ ...p, fecha_inicio: display }));
+                    if (raw.length === 8) {
+                      const d = raw.slice(0,2), m = raw.slice(2,4), y = raw.slice(4,8);
+                      setForm(p => ({ ...p, fecha_inicio: `${y}-${m}-${d}` }));
+                    } else {
+                      setForm(p => ({ ...p, fecha_inicio: '' }));
+                    }
+                  }}
+                  style={{ letterSpacing: 1 }}
+                />
               </div>
               <div className="form-group">
                 <label>Fecha Fin Estimada</label>
-                <input type="date" name="fecha_fin_estimada" value={form.fecha_fin_estimada} onChange={handleChange} />
+                <input
+                  type="text"
+                  placeholder="DD/MM/AAAA"
+                  maxLength={10}
+                  value={displayFechas.fecha_fin_estimada}
+                  onChange={e => {
+                    const raw = e.target.value.replace(/[^0-9]/g, '').slice(0, 8);
+                    let display = raw;
+                    if (raw.length > 4) display = raw.slice(0,2) + '/' + raw.slice(2,4) + '/' + raw.slice(4);
+                    else if (raw.length > 2) display = raw.slice(0,2) + '/' + raw.slice(2);
+                    setDisplayFechas(p => ({ ...p, fecha_fin_estimada: display }));
+                    if (raw.length === 8) {
+                      const d = raw.slice(0,2), m = raw.slice(2,4), y = raw.slice(4,8);
+                      setForm(p => ({ ...p, fecha_fin_estimada: `${y}-${m}-${d}` }));
+                    } else {
+                      setForm(p => ({ ...p, fecha_fin_estimada: '' }));
+                    }
+                  }}
+                  style={{ letterSpacing: 1 }}
+                />
               </div>
             </div>
 

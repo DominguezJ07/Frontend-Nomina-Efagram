@@ -4,7 +4,6 @@ import {
   getActividadesDisponibles, createAsignacion,
   getAsignaciones, cancelarAsignacion,
 } from '../services/subproyectosService';
-import { getClientes } from '../services/Clientesservice';
 import { getPersonal } from '../services/personalService';
 import httpClient from '../../../core/api/httpClient';
 import {
@@ -63,13 +62,14 @@ const SubproyectoModal = ({ isOpen, onClose, onSuccess, subproyecto = null, proy
   const modoEditar = !!subproyecto;
 
   const [form, setForm] = useState({
-    codigo: '', nombre: '', supervisor: '', cliente: '',
+    codigo: '', nombre: '', supervisor: '',
     fecha_inicio: '', fecha_fin_estimada: '', observaciones: '',
   });
 
+  const [displayFechas, setDisplayFechas] = useState({ fecha_inicio: '', fecha_fin_estimada: '' });
+
   const [nucleos,        setNucleos]        = useState([]);
   const [nucleosSel,     setNucleosSel]     = useState([]);
-  const [clientes,       setClientes]       = useState([]);
   const [personas,       setPersonas]       = useState([]);
   const [actDisponibles, setActDisponibles] = useState([]);
   const [asignaciones,   setAsignaciones]   = useState([]);
@@ -86,13 +86,11 @@ const SubproyectoModal = ({ isOpen, onClose, onSuccess, subproyecto = null, proy
     const cargar = async () => {
       try {
         setLoadData(true);
-        const [cRes, pRes, aRes] = await Promise.all([
-          getClientes(),
+        const [pRes, aRes] = await Promise.all([
           getPersonal(),
           getActividadesDisponibles(proyecto._id),
         ]);
 
-        setClientes(cRes?.data?.data ?? []);
         setPersonas(pRes?.data?.data ?? []);
         setActDisponibles(aRes?.data?.data ?? []);
 
@@ -106,16 +104,25 @@ const SubproyectoModal = ({ isOpen, onClose, onSuccess, subproyecto = null, proy
             codigo:             subproyecto.codigo               ?? '',
             nombre:             subproyecto.nombre               ?? '',
             supervisor:         subproyecto.supervisor?._id      ?? subproyecto.supervisor ?? '',
-            cliente:            subproyecto.cliente?._id         ?? subproyecto.cliente    ?? '',
             fecha_inicio:       subproyecto.fecha_inicio?.slice(0, 10)         ?? '',
             fecha_fin_estimada: subproyecto.fecha_fin_estimada?.slice(0, 10)   ?? '',
             observaciones:      subproyecto.observaciones        ?? '',
+          });
+          const toDisplay = (iso) => {
+            if (!iso) return '';
+            const [y, m, d] = iso.slice(0, 10).split('-');
+            return `${d}/${m}/${y}`;
+          };
+          setDisplayFechas({
+            fecha_inicio:       toDisplay(subproyecto.fecha_inicio),
+            fecha_fin_estimada: toDisplay(subproyecto.fecha_fin_estimada),
           });
           setNucleosSel(subproyecto.nucleos?.map(n => n._id ?? n) ?? []);
           const asRes = await getAsignaciones({ subproyecto: subproyecto._id });
           setAsignaciones(asRes?.data?.data ?? []);
         } else {
-          setForm({ codigo: '', nombre: '', supervisor: '', cliente: '', fecha_inicio: '', fecha_fin_estimada: '', observaciones: '' });
+          setForm({ codigo: '', nombre: '', supervisor: '', fecha_inicio: '', fecha_fin_estimada: '', observaciones: '' });
+          setDisplayFechas({ fecha_inicio: '', fecha_fin_estimada: '' });
           setNucleosSel([]);
           setAsignaciones([]);
           setNuevasAsigs([]);
@@ -316,13 +323,6 @@ const SubproyectoModal = ({ isOpen, onClose, onSuccess, subproyecto = null, proy
                     <input type="text" name="nombre" value={form.nombre} onChange={e => { setFormErrors([]); setForm(p => ({ ...p, nombre: e.target.value })); }} placeholder="Nombre del subproyecto" />
                   </div>
 
-                  <div className="form-group">
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}><User size={13} /> Cliente</label>
-                    <select name="cliente" value={form.cliente} onChange={e => setForm(p => ({ ...p, cliente: e.target.value }))}>
-                      <option value="">— Seleccione cliente (opcional) —</option>
-                      {clientes.map(c => <option key={c._id} value={c._id}>{c.nombre ?? c.razon_social}</option>)}
-                    </select>
-                  </div>
 
                   <div className="form-group">
                     <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}><User size={13} /> Supervisor</label>
@@ -335,11 +335,49 @@ const SubproyectoModal = ({ isOpen, onClose, onSuccess, subproyecto = null, proy
                   <div className="modal-grid">
                     <div className="form-group">
                       <label>Fecha Inicio</label>
-                      <input type="date" name="fecha_inicio" value={form.fecha_inicio} onChange={e => setForm(p => ({ ...p, fecha_inicio: e.target.value }))} />
+                      <input
+                        type="text"
+                        placeholder="DD/MM/AAAA"
+                        maxLength={10}
+                        value={displayFechas.fecha_inicio}
+                        onChange={e => {
+                          const raw = e.target.value.replace(/[^0-9]/g, '').slice(0, 8);
+                          let display = raw;
+                          if (raw.length > 4) display = raw.slice(0,2) + '/' + raw.slice(2,4) + '/' + raw.slice(4);
+                          else if (raw.length > 2) display = raw.slice(0,2) + '/' + raw.slice(2);
+                          setDisplayFechas(p => ({ ...p, fecha_inicio: display }));
+                          if (raw.length === 8) {
+                            const d = raw.slice(0,2), m = raw.slice(2,4), y = raw.slice(4,8);
+                            setForm(p => ({ ...p, fecha_inicio: `${y}-${m}-${d}` }));
+                          } else {
+                            setForm(p => ({ ...p, fecha_inicio: '' }));
+                          }
+                        }}
+                        style={{ letterSpacing: 1 }}
+                      />
                     </div>
                     <div className="form-group">
                       <label>Fecha Fin Estimada</label>
-                      <input type="date" name="fecha_fin_estimada" value={form.fecha_fin_estimada} onChange={e => setForm(p => ({ ...p, fecha_fin_estimada: e.target.value }))} />
+                      <input
+                        type="text"
+                        placeholder="DD/MM/AAAA"
+                        maxLength={10}
+                        value={displayFechas.fecha_fin_estimada}
+                        onChange={e => {
+                          const raw = e.target.value.replace(/[^0-9]/g, '').slice(0, 8);
+                          let display = raw;
+                          if (raw.length > 4) display = raw.slice(0,2) + '/' + raw.slice(2,4) + '/' + raw.slice(4);
+                          else if (raw.length > 2) display = raw.slice(0,2) + '/' + raw.slice(2);
+                          setDisplayFechas(p => ({ ...p, fecha_fin_estimada: display }));
+                          if (raw.length === 8) {
+                            const d = raw.slice(0,2), m = raw.slice(2,4), y = raw.slice(4,8);
+                            setForm(p => ({ ...p, fecha_fin_estimada: `${y}-${m}-${d}` }));
+                          } else {
+                            setForm(p => ({ ...p, fecha_fin_estimada: '' }));
+                          }
+                        }}
+                        style={{ letterSpacing: 1 }}
+                      />
                     </div>
                   </div>
 

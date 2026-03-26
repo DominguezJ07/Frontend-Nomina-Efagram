@@ -200,7 +200,7 @@ const SubproyectosPage = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e6e8ef' }}>
-                  {['Código', 'Nombre', 'Núcleos', 'Supervisor', 'Estado', 'Acciones'].map(h => (
+                  {['Código', 'Proyecto', 'Cliente', 'Nombre', 'Núcleos', 'Supervisor', 'Estado', 'Acciones'].map(h => (
                     <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                       {h}
                     </th>
@@ -215,6 +215,17 @@ const SubproyectosPage = () => {
 
                       <td style={{ padding: '13px 16px', fontSize: 13, fontWeight: 700, color: '#0f172a' }}>
                         {s.codigo}
+                      </td>
+
+                      <td style={{ padding: '13px 16px', fontSize: 13, color: '#0f172a' }}>
+                        <span style={{ fontWeight: 700 }}>{proyectoObj?.codigo ?? '—'}</span>
+                        <span style={{ display: 'block', fontSize: 12, color: '#64748b' }}>{proyectoObj?.nombre ?? '—'}</span>
+                      </td>
+
+                      <td style={{ padding: '13px 16px', fontSize: 13, color: '#0f172a' }}>
+                        {proyectoObj?.cliente?.nombre ?? proyectoObj?.cliente?.razon_social
+                          ? <span>{proyectoObj.cliente.nombre ?? proyectoObj.cliente.razon_social}</span>
+                          : <span style={{ color: '#cbd5e1' }}>—</span>}
                       </td>
 
                       <td style={{ padding: '13px 16px', fontSize: 13, color: '#0f172a' }}>
@@ -248,7 +259,6 @@ const SubproyectosPage = () => {
                       <td style={{ padding: '13px 16px' }}>
                         <div style={{ display: 'flex', gap: 8 }}>
 
-                          {/* Editar */}
                           <button
                             title="Editar subproyecto"
                             onClick={() => setModalState({ open: true, sub: s })}
@@ -263,7 +273,6 @@ const SubproyectosPage = () => {
                             Editar
                           </button>
 
-                          {/* Eliminar */}
                           <button
                             title="Eliminar subproyecto"
                             onClick={() => handleDelete(s._id)}

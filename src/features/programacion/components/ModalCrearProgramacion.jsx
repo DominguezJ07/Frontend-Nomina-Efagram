@@ -19,6 +19,7 @@ export default function ModalCrearProgramacion({ isOpen, onClose, onSave }) {
   const [contratoSeleccionado, setContratoSeleccionado] = useState('');
   const [infoContrato, setInfoContrato] = useState(null);
   const [fechaInicial, setFechaInicial] = useState('');
+  const [displayFechaInicial, setDisplayFechaInicial] = useState('');
   const [cantidadProyectada, setCantidadProyectada] = useState('');
   const [valorProyectado, setValorProyectado] = useState('');
   const [observaciones, setObservaciones] = useState('');
@@ -31,6 +32,7 @@ export default function ModalCrearProgramacion({ isOpen, onClose, onSave }) {
       setContratoSeleccionado('');
       setInfoContrato(null);
       setFechaInicial('');
+      setDisplayFechaInicial('');
       setCantidadProyectada('');
       setValorProyectado('');
       setObservaciones('');
@@ -286,8 +288,41 @@ export default function ModalCrearProgramacion({ isOpen, onClose, onSave }) {
                 <Calendar size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} />
                 Fecha Inicial *
               </label>
-              <input type="date" style={inputSt} value={fechaInicial}
-                onChange={e => setFechaInicial(e.target.value)} disabled={guardando} />
+              <input
+                type="text"
+                placeholder="DD/MM/AAAA"
+                maxLength={10}
+                style={{ ...inputSt, letterSpacing: 1 }}
+                value={displayFechaInicial}
+                disabled={guardando}
+                onChange={e => {
+                  const raw = e.target.value.replace(/[^0-9]/g, '').slice(0, 8);
+                  let display = raw;
+                  if (raw.length > 4) display = raw.slice(0,2) + '/' + raw.slice(2,4) + '/' + raw.slice(4);
+                  else if (raw.length > 2) display = raw.slice(0,2) + '/' + raw.slice(2);
+                  setDisplayFechaInicial(display);
+                  if (raw.length === 8) {
+                    const d = parseInt(raw.slice(0,2), 10);
+                    const m = parseInt(raw.slice(2,4), 10);
+                    const y = parseInt(raw.slice(4,8), 10);
+                    const fecha = new Date(y, m - 1, d);
+                    const valida = fecha.getFullYear() === y && fecha.getMonth() === m - 1 && fecha.getDate() === d && m >= 1 && m <= 12 && d >= 1 && d <= 31;
+                    if (valida) {
+                      const dd = String(d).padStart(2,'0'), mm = String(m).padStart(2,'0'), yy = String(y);
+                      setFechaInicial(`${yy}-${mm}-${dd}`);
+                    } else {
+                      setFechaInicial('');
+                    }
+                  } else {
+                    setFechaInicial('');
+                  }
+                }}
+              />
+              {displayFechaInicial.length === 10 && !fechaInicial && (
+                <small style={{ color: '#dc2626', fontSize: 11, marginTop: 2, display: 'block' }}>
+                  Fecha inválida — verifica día, mes y año
+                </small>
+              )}
             </div>
             <div>
               <label style={labelSt}>

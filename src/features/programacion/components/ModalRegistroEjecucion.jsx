@@ -202,30 +202,6 @@ export default function ModalRegistroEjecucion({ isOpen, onClose, programacion }
         {/* ── BODY ── */}
         <div style={{ padding: '18px 24px', overflowY: 'auto', flex: 1 }}>
 
-          {error && (
-            <div style={{
-              background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8,
-              padding: '10px 14px', marginBottom: 14,
-              display: 'flex', alignItems: 'center', gap: 8,
-              fontSize: 13, color: '#dc2626',
-            }}>
-              <AlertCircle size={15} style={{ flexShrink: 0 }} />
-              {error}
-            </div>
-          )}
-
-          {success && (
-            <div style={{
-              background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8,
-              padding: '10px 14px', marginBottom: 14,
-              display: 'flex', alignItems: 'center', gap: 8,
-              fontSize: 13, color: '#16a34a',
-            }}>
-              <CheckCircle2 size={15} style={{ flexShrink: 0 }} />
-              {success}
-            </div>
-          )}
-
           {loading ? (
             <div style={{ textAlign: 'center', padding: 48, color: '#9ca3af', fontSize: 14 }}>
               ⏳ Cargando registros diarios...
@@ -449,11 +425,36 @@ export default function ModalRegistroEjecucion({ isOpen, onClose, programacion }
         <div style={{
           padding: '14px 24px',
           borderTop: '1px solid #f0f0f0',
-          display: 'flex', justifyContent: 'flex-end', gap: 10,
+          display: 'flex', flexDirection: 'column', gap: 10,
           flexShrink: 0,
           background: '#fff',
           borderRadius: '0 0 18px 18px',
         }}>
+          {error && (
+            <div style={{
+              background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8,
+              padding: '10px 14px',
+              display: 'flex', alignItems: 'center', gap: 8,
+              fontSize: 13, color: '#dc2626',
+            }}>
+              <AlertCircle size={15} style={{ flexShrink: 0 }} />
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div style={{
+              background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8,
+              padding: '10px 14px',
+              display: 'flex', alignItems: 'center', gap: 8,
+              fontSize: 13, color: '#16a34a',
+            }}>
+              <CheckCircle2 size={15} style={{ flexShrink: 0 }} />
+              {success}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
           <button
             onClick={onClose}
             disabled={guardando}
@@ -481,6 +482,7 @@ export default function ModalRegistroEjecucion({ isOpen, onClose, programacion }
             <Save size={15} />
             {guardando ? 'Guardando...' : 'Guardar cambios'}
           </button>
+          </div>
         </div>
 
       </div>

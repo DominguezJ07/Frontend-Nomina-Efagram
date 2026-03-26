@@ -55,6 +55,7 @@ export default function NuevoPersonalModal({
   onSubmit,
 }) {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const [displayFechaIngreso, setDisplayFechaIngreso] = useState('');
 
   const [fincas,       setFincas]       = useState([]);
   const [procesos,     setProcesos]     = useState([]);
@@ -110,6 +111,13 @@ export default function NuevoPersonalModal({
         error:        null,
       },
     });
+    if (initialValues?.fecha_ingreso) {
+      const iso = initialValues.fecha_ingreso.substring(0, 10);
+      const [y, m, d] = iso.split('-');
+      setDisplayFechaIngreso(`${d}/${m}/${y}`);
+    } else {
+      setDisplayFechaIngreso('');
+    }
   }, [isOpen, initialValues]);
 
   if (!isOpen) return null;
@@ -227,7 +235,40 @@ export default function NuevoPersonalModal({
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <label className="field">
               <span>Fecha Ingreso</span>
-              <input type="date" value={state.fechaIngreso} onChange={setField('fechaIngreso')} />
+              <input
+                type="text"
+                placeholder="DD/MM/AAAA"
+                maxLength={10}
+                style={{ letterSpacing: 1 }}
+                value={displayFechaIngreso}
+                onChange={e => {
+                  const raw = e.target.value.replace(/[^0-9]/g, '').slice(0, 8);
+                  let display = raw;
+                  if (raw.length > 4) display = raw.slice(0,2) + '/' + raw.slice(2,4) + '/' + raw.slice(4);
+                  else if (raw.length > 2) display = raw.slice(0,2) + '/' + raw.slice(2);
+                  setDisplayFechaIngreso(display);
+                  if (raw.length === 8) {
+                    const d = parseInt(raw.slice(0,2), 10);
+                    const m = parseInt(raw.slice(2,4), 10);
+                    const y = parseInt(raw.slice(4,8), 10);
+                    const fecha = new Date(y, m - 1, d);
+                    const valida = fecha.getFullYear() === y && fecha.getMonth() === m - 1 && fecha.getDate() === d && m >= 1 && m <= 12;
+                    if (valida) {
+                      const dd = String(d).padStart(2,'0'), mm = String(m).padStart(2,'0'), yy = String(y);
+                      dispatch({ type: 'SET_FIELD', field: 'fechaIngreso', value: `${yy}-${mm}-${dd}` });
+                    } else {
+                      dispatch({ type: 'SET_FIELD', field: 'fechaIngreso', value: '' });
+                    }
+                  } else {
+                    dispatch({ type: 'SET_FIELD', field: 'fechaIngreso', value: '' });
+                  }
+                }}
+              />
+              {displayFechaIngreso.length === 10 && !state.fechaIngreso && (
+                <small style={{ color: '#dc2626', fontSize: 11, marginTop: 2 }}>
+                  Fecha inválida — verifica día, mes y año
+                </small>
+              )}
             </label>
             <label className="field">
               <span>Estado</span>

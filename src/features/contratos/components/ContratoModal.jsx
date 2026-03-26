@@ -74,7 +74,9 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
 
   const [form, setForm] = useState({
     codigo: '', subproyecto: '', finca: '',
-    fecha_inicio: '', fecha_fin: '', observaciones: '', estado: 'ACTIVO',
+    fecha_inicio: '', fecha_fin: '',
+    fecha_inicio_proyecto: '', fecha_fin_proyecto: '',
+    observaciones: '', estado: 'ACTIVO',
   });
 
   const [actividadesDisponibles, setActividadesDisponibles] = useState([]);
@@ -141,6 +143,8 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
         finca:         fincaId,
         fecha_inicio:  toDateInput(contrato.fecha_inicio),
         fecha_fin:     toDateInput(contrato.fecha_fin),
+        fecha_inicio_proyecto: toDateInput(contrato.fecha_inicio_proyecto),
+        fecha_fin_proyecto:    toDateInput(contrato.fecha_fin_proyecto),
         observaciones: contrato.observaciones ?? '',
         estado:        contrato.estado ?? 'ACTIVO',
       });
@@ -173,7 +177,9 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
 
   const resetForm = () => {
     setForm({ codigo:'', subproyecto:'', finca:'',
-              fecha_inicio:'', fecha_fin:'', observaciones:'', estado:'ACTIVO' });
+              fecha_inicio:'', fecha_fin:'',
+              fecha_inicio_proyecto:'', fecha_fin_proyecto:'',
+              observaciones:'', estado:'ACTIVO' });
     setLotes([]);
     setNuevoLote('');
     setActividadesDisponibles([]);
@@ -315,7 +321,6 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
     if (!form.finca)                 return setError('Selecciona una finca');
     if (lotes.length === 0)          return setError('Agrega al menos un lote'); // ✅
     if (actividadesSel.length === 0) return setError('Agrega al menos una actividad');
-    if (!form.fecha_inicio)          return setError('La fecha de inicio es obligatoria');
 
     for (const a of actividadesSel) {
       const err = errorCantidad(a);
@@ -330,7 +335,6 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
       for (let i = 0; i < cuadrillas.length; i++) {
         const c = cuadrillas[i];
         if (!c.nombre.trim()) return setError(`Cuadrilla ${i + 1}: el nombre es obligatorio`);
-        if (!c.codigo.trim()) return setError(`Cuadrilla ${i + 1}: el código es obligatorio`);
         if (!c.supervisor)    return setError(`Cuadrilla ${i + 1}: debes seleccionar un supervisor`);
         if (c.miembros.length === 0) return setError(`Cuadrilla ${i + 1}: agrega al menos un trabajador`);
       }
@@ -340,7 +344,6 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
         const resultados = await Promise.all(
           cuadrillas.map(c =>
             httpClient.post('/cuadrillas', {
-              codigo:    c.codigo.trim().toUpperCase(),
               nombre:    c.nombre.trim(),
               supervisor: c.supervisor._id ?? c.supervisor.id,
               miembros:  c.miembros.map(m => m._id ?? m.id),
@@ -361,7 +364,7 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
         codigo:       form.codigo.trim().toUpperCase(),
         subproyecto:  form.subproyecto,
         finca:        form.finca,
-        lotes:        lotes.map((l) => ({ nombre: l.nombre })), // ✅ solo nombre, el backend genera el código
+        lotes:        lotes.map((l) => ({ nombre: l.nombre })),
         actividades:  actividadesSel.map(a => ({
           actividad:       a.actividad_id,
           cantidad:        Number(a.cantidad),
@@ -370,6 +373,8 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
         cuadrillas:    cuadrillaIds,
         fecha_inicio:  form.fecha_inicio,
         fecha_fin:     form.fecha_fin || null,
+        fecha_inicio_proyecto: form.fecha_inicio_proyecto || null,
+        fecha_fin_proyecto:    form.fecha_fin_proyecto    || null,
         observaciones: form.observaciones.trim(),
         estado:        form.estado,
       };
@@ -473,10 +478,16 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
                 })}
               </div>
             </InfoRow>
-            <InfoRow icon={Calendar} label="Vigencia">
+            <InfoRow icon={Calendar} label="Vigencia del contrato">
               {c.fecha_inicio ? new Date(c.fecha_inicio).toLocaleDateString('es-CO') : '—'}
               {c.fecha_fin ? ` → ${new Date(c.fecha_fin).toLocaleDateString('es-CO')}` : ''}
             </InfoRow>
+            {(c.fecha_inicio_proyecto || c.fecha_fin_proyecto) && (
+              <InfoRow icon={Calendar} label="Vigencia del proyecto">
+                {c.fecha_inicio_proyecto ? new Date(c.fecha_inicio_proyecto).toLocaleDateString('es-CO') : '—'}
+                {c.fecha_fin_proyecto ? ` → ${new Date(c.fecha_fin_proyecto).toLocaleDateString('es-CO')}` : ''}
+              </InfoRow>
+            )}
           </div>
           <div className="modal-footer">
             <button className="btn-cancelar" onClick={onClose}>Cerrar</button>
@@ -561,18 +572,11 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
                       <option value="CANCELADO">Cancelado</option>
                     </select>
                   </div>
-                  <div className="form-field">
-                    <label>Fecha inicio *</label>
-                    <input type="date" value={form.fecha_inicio}
-                      onChange={e => setForm(p => ({ ...p, fecha_inicio: e.target.value }))} />
-                  </div>
-                  <div className="form-field">
-                    <label>Fecha fin</label>
-                    <input type="date" value={form.fecha_fin}
-                      onChange={e => setForm(p => ({ ...p, fecha_fin: e.target.value }))} />
-                  </div>
+
                 </div>
               </div>
+
+
 
               <div className="form-section">
                 <p className="form-section-title" style={{ display:'flex', alignItems:'center', gap:7 }}><MapPin size={14} color="#e67e22" /> Ubicación</p>
@@ -865,20 +869,13 @@ export default function ContratoModal({ isOpen, onClose, onSuccess, contrato = n
 
                         {cua.expandida && (
                           <div style={{ padding:'16px', display:'flex', flexDirection:'column', gap:14 }}>
-                            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                            <div style={{ display:'grid', gridTemplateColumns:'1fr', gap:12 }}>
                               <div className="form-field" style={{ margin:0 }}>
                                 <label>Nombre *</label>
                                 <input placeholder="Ej: Cuadrilla Norte"
                                   value={cua.nombre}
                                   style={{ background:'#fff', color:'#0f172a' }}
                                   onChange={e => actualizarCuadrilla(cuaIdx, 'nombre', e.target.value)} />
-                              </div>
-                              <div className="form-field" style={{ margin:0 }}>
-                                <label>Código *</label>
-                                <input placeholder="Ej: CUA-001"
-                                  value={cua.codigo}
-                                  style={{ background:'#fff', color:'#0f172a' }}
-                                  onChange={e => actualizarCuadrilla(cuaIdx, 'codigo', e.target.value.toUpperCase())} />
                               </div>
                             </div>
 
