@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
     LayoutDashboard, BarChart3, Play, Folder,
@@ -8,9 +8,13 @@ import {
 } from "lucide-react";
 import "./sidebar.css";
 
+const SIDEBAR_SCROLL_KEY = "efagram_sidebar_scroll_top";
+const SIDEBAR_STATE_KEY = "efagram_sidebar_state";
+
 export default function Sidebar() {
     const navigate = useNavigate();
     const location = useLocation();
+    const sidebarRef = useRef(null);
 
     const isEjecucion     = location.pathname.startsWith("/ejecucion");
     const isProyectos     = location.pathname.startsWith("/proyectos");
@@ -18,28 +22,112 @@ export default function Sidebar() {
     const isConfiguracion = location.pathname.startsWith("/configuracion");
     const isReportes      = location.pathname.startsWith("/reportes");
 
-    const [manualEjecucion,     setManualEjecucion]     = useState(null);
-    const [manualProyectos,     setManualProyectos]     = useState(null);
-    const [manualConfiguracion, setManualConfiguracion] = useState(null);
-    const [openReportes,        setOpenReportes]        = useState(false);
+    const getInitialSidebarState = () => {
+        try {
+            const saved = sessionStorage.getItem(SIDEBAR_STATE_KEY);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                return {
+                    manualEjecucion: parsed.manualEjecucion ?? null,
+                    manualProyectos: parsed.manualProyectos ?? null,
+                    manualConfiguracion: parsed.manualConfiguracion ?? null,
+                    openReportes: parsed.openReportes ?? false,
+                    openUbicacion:
+                        parsed.openUbicacion ??
+                        location.pathname.startsWith("/configuracion/ubicacion"),
+                };
+            }
+        } catch (error) {
+            console.error("No se pudo leer el estado del sidebar:", error);
+        }
 
-    const [openUbicacion, setOpenUbicacion] = useState(
-        location.pathname.startsWith("/configuracion/ubicacion")
-    );
+        return {
+            manualEjecucion: null,
+            manualProyectos: null,
+            manualConfiguracion: null,
+            openReportes: false,
+            openUbicacion: location.pathname.startsWith("/configuracion/ubicacion"),
+        };
+    };
 
-    const openEjecucion     = manualEjecucion     !== null ? manualEjecucion     : isEjecucion;
-    const openProyectos     = manualProyectos     !== null ? manualProyectos     : isProyectos;
+    const initialState = getInitialSidebarState();
+
+    const [manualEjecucion, setManualEjecucion] = useState(initialState.manualEjecucion);
+    const [manualProyectos, setManualProyectos] = useState(initialState.manualProyectos);
+    const [manualConfiguracion, setManualConfiguracion] = useState(initialState.manualConfiguracion);
+    const [openReportes, setOpenReportes] = useState(initialState.openReportes);
+    const [openUbicacion, setOpenUbicacion] = useState(initialState.openUbicacion);
+
+    const openEjecucion     = manualEjecucion !== null ? manualEjecucion : isEjecucion;
+    const openProyectos     = manualProyectos !== null ? manualProyectos : isProyectos;
     const openConfiguracion = manualConfiguracion !== null ? manualConfiguracion : isConfiguracion;
 
-    const toggleEjecucion     = () => setManualEjecucion(!openEjecucion);
-    const toggleProyectos     = () => setManualProyectos(!openProyectos);
-    const toggleConfiguracion = () => setManualConfiguracion(!openConfiguracion);
+    const toggleEjecucion = () => setManualEjecucion((prev) => !(prev !== null ? prev : isEjecucion));
+    const toggleProyectos = () => setManualProyectos((prev) => !(prev !== null ? prev : isProyectos));
+    const toggleConfiguracion = () => setManualConfiguracion((prev) => !(prev !== null ? prev : isConfiguracion));
 
-    const isActive    = (path) => location.pathname === path;
+    const isActive = (path) => location.pathname === path;
     const isActiveSub = (path) => location.pathname === path ? "submenu-active" : "";
 
+    const saveSidebarScroll = () => {
+        const el = sidebarRef.current;
+        if (!el) return;
+        sessionStorage.setItem(SIDEBAR_SCROLL_KEY, String(el.scrollTop));
+    };
+
+    const navigatePreservingSidebar = (path) => {
+        saveSidebarScroll();
+        navigate(path);
+    };
+
+    useEffect(() => {
+        try {
+            sessionStorage.setItem(
+                SIDEBAR_STATE_KEY,
+                JSON.stringify({
+                    manualEjecucion,
+                    manualProyectos,
+                    manualConfiguracion,
+                    openReportes,
+                    openUbicacion,
+                })
+            );
+        } catch (error) {
+            console.error("No se pudo guardar el estado del sidebar:", error);
+        }
+    }, [manualEjecucion, manualProyectos, manualConfiguracion, openReportes, openUbicacion]);
+
+    useLayoutEffect(() => {
+        const el = sidebarRef.current;
+        if (!el) return;
+
+        const savedScroll = sessionStorage.getItem(SIDEBAR_SCROLL_KEY);
+        if (savedScroll !== null) {
+            el.scrollTop = Number(savedScroll) || 0;
+        }
+    }, [location.pathname]);
+
+    useEffect(() => {
+        const el = sidebarRef.current;
+        if (!el) return;
+
+        const handleScroll = () => {
+            sessionStorage.setItem(SIDEBAR_SCROLL_KEY, String(el.scrollTop));
+        };
+
+        el.addEventListener("scroll", handleScroll);
+        return () => el.removeEventListener("scroll", handleScroll);
+    }, []);
+
+    useEffect(() => {
+        if (location.pathname.startsWith("/configuracion/ubicacion")) {
+            setManualConfiguracion(true);
+            setOpenUbicacion(true);
+        }
+    }, [location.pathname]);
+
     return (
-        <aside className="sidebar">
+        <aside className="sidebar" ref={sidebarRef}>
 
             <div className="sidebar-header">
                 <div className="logo-icon">
@@ -59,27 +147,31 @@ export default function Sidebar() {
 
                 <div
                     className={`menu-item ${isActive("/") ? "active" : ""}`}
-                    onClick={() => navigate("/")}
+                    onClick={() => navigatePreservingSidebar("/")}
                 >
                     <LayoutDashboard size={18} /><span>Dashboard</span>
                 </div>
 
                 <div className="menu-title">Módulos</div>
 
-                {/* ── REPORTES ── */}
-                <div className={`menu-item ${isReportes ? "active" : ""}`} onClick={() => setOpenReportes(!openReportes)}>
+                <div
+                    className={`menu-item ${isReportes ? "active" : ""}`}
+                    onClick={() => setOpenReportes((prev) => !prev)}
+                >
                     <BarChart3 size={18} /><span>Reportes</span>
                     <ChevronDown size={16} className={`arrow ${openReportes ? "rotate" : ""}`} />
                 </div>
                 {openReportes && (
                     <div className="submenu">
-                        <div className={`submenu-item ${isActiveSub("/reportes")}`} onClick={() => navigate("/reportes")}>
+                        <div
+                            className={`submenu-item ${isActiveSub("/reportes")}`}
+                            onClick={() => navigatePreservingSidebar("/reportes")}
+                        >
                             <BarChart3 size={16} />Reporte General
                         </div>
                     </div>
                 )}
 
-                {/* ── EJECUCIÓN ── */}
                 <div
                     className={`menu-item ${isEjecucion ? "active" : ""}`}
                     onClick={toggleEjecucion}
@@ -89,27 +181,34 @@ export default function Sidebar() {
                 </div>
                 {openEjecucion && (
                     <div className="submenu">
-                        <div className={`submenu-item ${isActiveSub("/ejecucion/novedades")}`} onClick={() => navigate("/ejecucion/novedades")}>
+                        <div
+                            className={`submenu-item ${isActiveSub("/ejecucion/novedades")}`}
+                            onClick={() => navigatePreservingSidebar("/ejecucion/novedades")}
+                        >
                             <AlertTriangle size={16} />Novedades
                         </div>
-                        <div className={`submenu-item ${isActiveSub("/ejecucion/calendario")}`} onClick={() => navigate("/ejecucion/calendario")}>
+                        <div
+                            className={`submenu-item ${isActiveSub("/ejecucion/calendario")}`}
+                            onClick={() => navigatePreservingSidebar("/ejecucion/calendario")}
+                        >
                             <Calendar size={16} />Calendario
                         </div>
-                        <div className={`submenu-item ${isActiveSub("/ejecucion/semanas-operativas")}`} onClick={() => navigate("/ejecucion/semanas-operativas")}>
+                        <div
+                            className={`submenu-item ${isActiveSub("/ejecucion/semanas-operativas")}`}
+                            onClick={() => navigatePreservingSidebar("/ejecucion/semanas-operativas")}
+                        >
                             <Clock size={16} />Semanas Operativas
                         </div>
                     </div>
                 )}
 
-                {/* ── PROGRAMACIÓN ── */}
                 <div
                     className={`menu-item ${isProgramacion ? "active" : ""}`}
-                    onClick={() => navigate("/programacion")}
+                    onClick={() => navigatePreservingSidebar("/programacion")}
                 >
                     <Activity size={18} /><span>Programación</span>
                 </div>
 
-                {/* ── PROYECTOS ── */}
                 <div
                     className={`menu-item ${isProyectos ? "active" : ""}`}
                     onClick={toggleProyectos}
@@ -119,13 +218,22 @@ export default function Sidebar() {
                 </div>
                 {openProyectos && (
                     <div className="submenu">
-                        <div className={`submenu-item ${isActiveSub("/proyectos")}`} onClick={() => navigate("/proyectos")}>
+                        <div
+                            className={`submenu-item ${isActiveSub("/proyectos")}`}
+                            onClick={() => navigatePreservingSidebar("/proyectos")}
+                        >
                             <Folder size={16} />Proyectos
                         </div>
-                        <div className={`submenu-item ${isActiveSub("/proyectos/subproyectos")}`} onClick={() => navigate("/proyectos/subproyectos")}>
+                        <div
+                            className={`submenu-item ${isActiveSub("/proyectos/subproyectos")}`}
+                            onClick={() => navigatePreservingSidebar("/proyectos/subproyectos")}
+                        >
                             <GitBranch size={16} />Subproyectos
                         </div>
-                        <div className={`submenu-item ${isActiveSub("/proyectos/contratos")}`} onClick={() => navigate("/proyectos/contratos")}>
+                        <div
+                            className={`submenu-item ${isActiveSub("/proyectos/contratos")}`}
+                            onClick={() => navigatePreservingSidebar("/proyectos/contratos")}
+                        >
                             <FileText size={16} />Contratos
                         </div>
                     </div>
@@ -133,7 +241,6 @@ export default function Sidebar() {
 
                 <div className="menu-title">Sistema</div>
 
-                {/* ── CONFIGURACIÓN ── */}
                 <div
                     className={`menu-item ${isConfiguracion ? "active" : ""}`}
                     onClick={toggleConfiguracion}
@@ -147,72 +254,72 @@ export default function Sidebar() {
 
                         <div
                             className={`submenu-item ${isActiveSub("/configuracion/catalogo-clientes")}`}
-                            onClick={() => navigate("/configuracion/catalogo-clientes")}
+                            onClick={() => navigatePreservingSidebar("/configuracion/catalogo-clientes")}
                         >
                             <Users size={16} />Catálogo Clientes
                         </div>
 
                         <div
                             className={`submenu-item ${isActiveSub("/configuracion/catalogo-actividades")}`}
-                            onClick={() => navigate("/configuracion/catalogo-actividades")}
+                            onClick={() => navigatePreservingSidebar("/configuracion/catalogo-actividades")}
                         >
                             <CheckSquare size={16} />Catálogo Actividades
                         </div>
 
                         <div
                             className={`submenu-item ${isActiveSub("/configuracion/catalogo-intervenciones")}`}
-                            onClick={() => navigate("/configuracion/catalogo-intervenciones")}
+                            onClick={() => navigatePreservingSidebar("/configuracion/catalogo-intervenciones")}
                         >
                             <Wrench size={16} />Catálogo Intervenciones
                         </div>
 
                         <div
                             className={`submenu-item ${isActiveSub("/configuracion/catalogo-procesos")}`}
-                            onClick={() => navigate("/configuracion/catalogo-procesos")}
+                            onClick={() => navigatePreservingSidebar("/configuracion/catalogo-procesos")}
                         >
                             <Layers size={16} />Catálogo Procesos
                         </div>
 
                         <div
                             className={`submenu-item ${isActiveSub("/configuracion/catalogo-personal")}`}
-                            onClick={() => navigate("/configuracion/catalogo-personal")}
+                            onClick={() => navigatePreservingSidebar("/configuracion/catalogo-personal")}
                         >
                             <Users size={16} />Catálogo Personal
                         </div>
 
                         <div
                             className={`submenu-item ${isActiveSub("/configuracion/catalogo-cargos")}`}
-                            onClick={() => navigate("/configuracion/catalogo-cargos")}
+                            onClick={() => navigatePreservingSidebar("/configuracion/catalogo-cargos")}
                         >
                             <Briefcase size={16} />Catálogo Cargos
                         </div>
 
-                        {/* ── Ubicación ── */}
                         <div
                             className="submenu-item submenu-group"
-                            onClick={() => setOpenUbicacion(!openUbicacion)}
+                            onClick={() => setOpenUbicacion((prev) => !prev)}
                         >
                             <MapPin size={16} />
                             <span>Ubicación</span>
                             <ChevronDown size={13} className={`arrow arrow-sub ${openUbicacion ? "rotate" : ""}`} />
                         </div>
+
                         {openUbicacion && (
                             <div className="submenu submenu-nested">
                                 <div
                                     className={`submenu-item ${isActiveSub("/configuracion/ubicacion/zonas")}`}
-                                    onClick={() => navigate("/configuracion/ubicacion/zonas")}
+                                    onClick={() => navigatePreservingSidebar("/configuracion/ubicacion/zonas")}
                                 >
                                     <MapPin size={14} />Zonas
                                 </div>
                                 <div
                                     className={`submenu-item ${isActiveSub("/configuracion/ubicacion/nucleos")}`}
-                                    onClick={() => navigate("/configuracion/ubicacion/nucleos")}
+                                    onClick={() => navigatePreservingSidebar("/configuracion/ubicacion/nucleos")}
                                 >
                                     <Layers size={14} />Núcleos
                                 </div>
                                 <div
                                     className={`submenu-item ${isActiveSub("/configuracion/ubicacion/fincas")}`}
-                                    onClick={() => navigate("/configuracion/ubicacion/fincas")}
+                                    onClick={() => navigatePreservingSidebar("/configuracion/ubicacion/fincas")}
                                 >
                                     <Building size={14} />Fincas
                                 </div>
@@ -221,7 +328,6 @@ export default function Sidebar() {
 
                     </div>
                 )}
-
             </div>
 
             <div className="sidebar-footer">

@@ -1,13 +1,14 @@
 import { useEffect, useReducer } from 'react';
 import { X } from 'lucide-react';
+import { getNextNucleoCode } from '../../services/nucleos.service';
 
 const INITIAL_STATE = {
   codigo: '',
   nombre: '',
-  zona:   '',
+  zona: '',
   estado: true,
   saving: false,
-  error:  null,
+  error: null,
 };
 
 function reducer(state, action) {
@@ -34,52 +35,75 @@ export default function NuevoNucleoModal({
   onSubmit,
 }) {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const isEdit = title.toLowerCase().includes('editar');
 
   const setField = (field) => (e) =>
     dispatch({ type: 'SET_FIELD', field, value: e.target.value });
 
-  // UN solo dispatch — sin renders en cascada
   useEffect(() => {
     if (!isOpen) return;
+
     const estadoValue = initialValues?.activo ?? initialValues?.activa ?? initialValues?.estado;
+
     dispatch({
       type: 'RESET',
       values: {
         codigo: initialValues?.codigo ?? '',
         nombre: initialValues?.nombre ?? '',
-        zona:   initialValues?.zona   ?? initialValues?.zonaId ?? '',
+        zona: initialValues?.zona ?? initialValues?.zonaId ?? '',
         estado: typeof estadoValue === 'boolean' ? estadoValue : true,
         saving: false,
-        error:  null,
+        error: null,
       },
     });
   }, [isOpen, initialValues]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    if (isEdit) return;
+
+    if (!state.zona) {
+      dispatch({ type: 'SET_FIELD', field: 'codigo', value: '' });
+      return;
+    }
+
+    const loadNextCode = async () => {
+      try {
+        const res = await getNextNucleoCode(state.zona);
+        dispatch({
+          type: 'SET_FIELD',
+          field: 'codigo',
+          value: res?.data?.formatted ?? '',
+        });
+      } catch (err) {
+        console.error(err);
+        dispatch({ type: 'SET_ERROR', value: 'No se pudo calcular el código automático' });
+      }
+    };
+
+    loadNextCode();
+  }, [isOpen, isEdit, state.zona]);
+
   if (!isOpen) return null;
-
-  const isEdit = title.toLowerCase().includes('editar');
-
-  // Solo 2 dígitos (00-99)
-  const handleCodigo = (e) => {
-    const val = e.target.value.replace(/\D/g, '').slice(0, 2);
-    dispatch({ type: 'SET_FIELD', field: 'codigo', value: val });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     dispatch({ type: 'SET_ERROR', value: null });
 
-    if (!state.codigo.trim() || !state.nombre.trim()) {
-      dispatch({ type: 'SET_ERROR', value: 'Código y nombre son obligatorios' });
+    if (!state.nombre.trim() || !state.zona) {
+      dispatch({ type: 'SET_ERROR', value: 'Zona y nombre son obligatorios' });
       return;
     }
 
     const payload = {
-      codigo: Number(state.codigo),
       nombre: state.nombre.trim(),
+      zona: state.zona,
       activo: Boolean(state.estado),
     };
-    if (state.zona) payload.zona = state.zona;
+
+    if (isEdit) {
+      payload.codigo = String(state.codigo).trim();
+    }
 
     try {
       dispatch({ type: 'SET_SAVING', value: true });
@@ -94,7 +118,6 @@ export default function NuevoNucleoModal({
   return (
     <div className="modal-backdrop">
       <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-
         <div className="modal-header">
           <div>
             <h3 className="modal-title">{title}</h3>
@@ -106,17 +129,12 @@ export default function NuevoNucleoModal({
         </div>
 
         <form className="modal-body" onSubmit={handleSubmit}>
-
-          {/* Código — 2 dígitos */}
           <label className="field">
-            <span>Código <span style={{ color: '#9ca3af', fontWeight: 400 }}>(2 dígitos)</span></span>
+            <span>Código <span style={{ color: '#9ca3af', fontWeight: 400 }}>(automático)</span></span>
             <input
               value={state.codigo}
-              onChange={handleCodigo}
-              placeholder="Ej: 01"
-              inputMode="numeric"
-              maxLength={2}
-              autoFocus
+              readOnly
+              placeholder={state.zona ? 'Auto' : 'Seleccione una zona'}
             />
           </label>
 
@@ -126,6 +144,7 @@ export default function NuevoNucleoModal({
               value={state.nombre}
               onChange={setField('nombre')}
               placeholder="Ej: Núcleo Norte 1"
+              autoFocus
             />
           </label>
 
@@ -133,10 +152,14 @@ export default function NuevoNucleoModal({
             <label className="field">
               <span>Zona</span>
               <select value={state.zona} onChange={setField('zona')}>
-                <option value="">-- Sin zona --</option>
+                <option value="">-- Seleccione una zona --</option>
                 {zonas.map((z) => {
                   const id = z?._id ?? z?.id;
-                  return <option key={id} value={id}>{z?.nombre ?? id}</option>;
+                  return (
+                    <option key={id} value={id}>
+                      {z?.nombre ?? id}
+                    </option>
+                  );
                 })}
               </select>
             </label>

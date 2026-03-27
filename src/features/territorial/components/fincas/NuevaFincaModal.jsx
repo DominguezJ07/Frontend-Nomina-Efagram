@@ -1,11 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Este componente NO usa useEffect para poblar el formulario.
-// El padre debe pasarle una `key` dinámica (ej: key={editFinca?._id ?? 'create'})
-// para que React lo desmonte/monte al cambiar, reiniciando el estado solo.
-// ─────────────────────────────────────────────────────────────────────────────
+import { getNextFincaCode } from '../../services/fincas.service';
 
 function resolveEstado(initialValues) {
   const raw = initialValues?.activa ?? initialValues?.estado;
@@ -21,37 +16,69 @@ export default function NuevaFincaModal({
   onClose,
   onSubmit,
 }) {
-  // Estado inicializado directamente desde props — sin useEffect
-  const [codigo, setCodigo] = useState(initialValues?.codigo  ?? '');
-  const [nombre, setNombre] = useState(initialValues?.nombre  ?? '');
-  const [nucleo, setNucleo] = useState(
-    initialValues?.nucleo ?? initialValues?.nucleoId ?? ''
-  );
-  const [area,   setArea]   = useState(
+  const isEdit = title.toLowerCase().includes('editar');
+
+  const [codigo, setCodigo] = useState(initialValues?.codigo ?? '');
+  const [nombre, setNombre] = useState(initialValues?.nombre ?? '');
+  const [nucleo, setNucleo] = useState(initialValues?.nucleo ?? initialValues?.nucleoId ?? '');
+  const [area, setArea] = useState(
     initialValues?.area ?? initialValues?.areaTotal ?? initialValues?.hectareas ?? ''
   );
   const [estado, setEstado] = useState(resolveEstado(initialValues));
   const [saving, setSaving] = useState(false);
-  const [error,  setError]  = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    setCodigo(initialValues?.codigo ?? '');
+    setNombre(initialValues?.nombre ?? '');
+    setNucleo(initialValues?.nucleo ?? initialValues?.nucleoId ?? '');
+    setArea(initialValues?.area ?? initialValues?.areaTotal ?? initialValues?.hectareas ?? '');
+    setEstado(resolveEstado(initialValues));
+    setSaving(false);
+    setError(null);
+  }, [isOpen, initialValues]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (isEdit) return;
+
+    if (!nucleo) {
+      setCodigo('');
+      return;
+    }
+
+    const loadNextCode = async () => {
+      try {
+        const res = await getNextFincaCode(nucleo);
+        setCodigo(res?.data?.formatted ?? '');
+      } catch (err) {
+        console.error(err);
+        setError('No se pudo calcular el código automático');
+      }
+    };
+
+    loadNextCode();
+  }, [isOpen, isEdit, nucleo]);
 
   if (!isOpen) return null;
-
-  const isEdit = title.toLowerCase().includes('editar');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
     const payload = {
-      codigo: String(codigo).trim(),
       nombre: String(nombre).trim(),
       activa: Boolean(estado),
     };
-    if (nucleo)      payload.nucleo = nucleo;
-    if (area !== '') payload.area_total = parseFloat(area);
 
-    if (!payload.codigo || !payload.nombre) {
-      setError('Código y nombre son obligatorios');
+    if (nucleo) payload.nucleo = nucleo;
+    if (area !== '') payload.area_total = parseFloat(area);
+    if (isEdit) payload.codigo = String(codigo).trim();
+
+    if (!payload.nombre || !payload.nucleo) {
+      setError('Núcleo y nombre son obligatorios');
       return;
     }
 
@@ -86,12 +113,11 @@ export default function NuevaFincaModal({
 
         <div className="modal-body">
           <label className="field">
-            <span>Código</span>
+            <span>Código <span style={{ color: '#9ca3af', fontWeight: 400 }}>(automático)</span></span>
             <input
               value={codigo}
-              onChange={(e) => setCodigo(e.target.value)}
-              placeholder="Ej: FIN-001"
-              autoFocus
+              readOnly
+              placeholder={nucleo ? 'Auto' : 'Seleccione un núcleo'}
             />
           </label>
 
@@ -101,6 +127,7 @@ export default function NuevaFincaModal({
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               placeholder="Ej: El Paraíso"
+              autoFocus
             />
           </label>
 
@@ -108,7 +135,7 @@ export default function NuevaFincaModal({
             <label className="field">
               <span>Núcleo</span>
               <select value={nucleo} onChange={(e) => setNucleo(e.target.value)}>
-                <option value="">-- Sin núcleo --</option>
+                <option value="">-- Seleccione un núcleo --</option>
                 {nucleos.map((n) => {
                   const id = n?._id ?? n?.id;
                   return (

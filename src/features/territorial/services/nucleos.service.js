@@ -5,6 +5,13 @@ export const getNucleos = async () => {
   return response.data;
 };
 
+export const getNextNucleoCode = async (zonaId) => {
+  const response = await httpClient.get('/nucleos/next-code', {
+    params: { zona: zonaId }
+  });
+  return response.data;
+};
+
 export const createNucleo = async (data) => {
   const response = await httpClient.post('/nucleos', data);
   return response.data;

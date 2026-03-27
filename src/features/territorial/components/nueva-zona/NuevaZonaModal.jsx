@@ -1,12 +1,13 @@
 import { useEffect, useReducer } from 'react';
 import { X } from 'lucide-react';
+import { getNextZonaCode } from '../../services/zonas.service';
 
 const INITIAL_STATE = {
   codigo: '',
   nombre: '',
   estado: true,
   saving: false,
-  error:  null,
+  error: null,
 };
 
 function reducer(state, action) {
@@ -32,50 +33,82 @@ export default function NuevaZonaModal({
   onSubmit,
 }) {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const isEdit = title.toLowerCase().includes('editar');
 
   const setField = (field) => (e) =>
     dispatch({ type: 'SET_FIELD', field, value: e.target.value });
 
-  // UN solo dispatch — sin renders en cascada
   useEffect(() => {
     if (!isOpen) return;
-    const estadoValue = initialValues?.activa ?? initialValues?.estado;
-    dispatch({
-      type: 'RESET',
-      values: {
-        codigo: initialValues?.codigo ?? '',
-        nombre: initialValues?.nombre ?? '',
-        estado: typeof estadoValue === 'boolean' ? estadoValue : true,
-        saving: false,
-        error:  null,
-      },
-    });
-  }, [isOpen, initialValues]);
+
+    const load = async () => {
+      const estadoValue = initialValues?.activa ?? initialValues?.estado;
+
+      if (isEdit) {
+        dispatch({
+          type: 'RESET',
+          values: {
+            codigo: initialValues?.codigo !== undefined && initialValues?.codigo !== null
+              ? String(initialValues.codigo).padStart(2, '0')
+              : '',
+            nombre: initialValues?.nombre ?? '',
+            estado: typeof estadoValue === 'boolean' ? estadoValue : true,
+            saving: false,
+            error: null,
+          },
+        });
+        return;
+      }
+
+      try {
+        const res = await getNextZonaCode();
+        dispatch({
+          type: 'RESET',
+          values: {
+            codigo: res?.data?.formatted ?? '',
+            nombre: '',
+            estado: true,
+            saving: false,
+            error: null,
+          },
+        });
+      } catch (err) {
+        console.error(err);
+        dispatch({
+          type: 'RESET',
+          values: {
+            codigo: '',
+            nombre: '',
+            estado: true,
+            saving: false,
+            error: 'No se pudo calcular el código automático',
+          },
+        });
+      }
+    };
+
+    load();
+  }, [isOpen, initialValues, isEdit]);
 
   if (!isOpen) return null;
-
-  const isEdit = title.toLowerCase().includes('editar');
-
-  // Solo 1 dígito (0-9)
-  const handleCodigo = (e) => {
-    const val = e.target.value.replace(/\D/g, '').slice(0, 1);
-    dispatch({ type: 'SET_FIELD', field: 'codigo', value: val });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     dispatch({ type: 'SET_ERROR', value: null });
 
-    if (!state.codigo.trim() || !state.nombre.trim()) {
-      dispatch({ type: 'SET_ERROR', value: 'Código y nombre son obligatorios' });
+    if (!state.nombre.trim()) {
+      dispatch({ type: 'SET_ERROR', value: 'El nombre es obligatorio' });
       return;
     }
 
     const payload = {
-      codigo: Number(state.codigo),
       nombre: state.nombre.trim(),
       activa: Boolean(state.estado),
     };
+
+    if (isEdit) {
+      payload.codigo = Number(state.codigo);
+    }
 
     try {
       dispatch({ type: 'SET_SAVING', value: true });
@@ -106,17 +139,12 @@ export default function NuevaZonaModal({
         </div>
 
         <form className="modal-body" onSubmit={handleSubmit}>
-
-          {/* Código — 1 dígito */}
           <label className="field">
-            <span>Código <span style={{ color: '#9ca3af', fontWeight: 400 }}>(1 dígito)</span></span>
+            <span>Código <span style={{ color: '#9ca3af', fontWeight: 400 }}>(automático)</span></span>
             <input
               value={state.codigo}
-              onChange={handleCodigo}
-              placeholder="Ej: 1"
-              inputMode="numeric"
-              maxLength={1}
-              autoFocus     
+              readOnly
+              placeholder="Auto"
             />
           </label>
 
@@ -126,6 +154,7 @@ export default function NuevaZonaModal({
               value={state.nombre}
               onChange={setField('nombre')}
               placeholder="Ej: Zona Norte"
+              autoFocus
             />
           </label>
 

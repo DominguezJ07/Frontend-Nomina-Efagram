@@ -1,10 +1,12 @@
 import httpClient from '../../../core/api/httpClient';
 
-// Nota: VITE_API_URL ya incluye /api/v1
-// Ej: https://backend-nomina-efagram.onrender.com/api/v1
-
 export const getZonas = async () => {
   const response = await httpClient.get('/zonas');
+  return response.data;
+};
+
+export const getNextZonaCode = async () => {
+  const response = await httpClient.get('/zonas/next-code');
   return response.data;
 };
 

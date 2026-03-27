@@ -5,6 +5,13 @@ export const getFincas = async () => {
   return response.data;
 };
 
+export const getNextFincaCode = async (nucleoId) => {
+  const response = await httpClient.get('/fincas/next-code', {
+    params: { nucleo: nucleoId }
+  });
+  return response.data;
+};
+
 export const createFinca = async (data) => {
   const response = await httpClient.post('/fincas', data);
   return response.data;
