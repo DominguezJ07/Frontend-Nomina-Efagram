@@ -16,11 +16,11 @@ export default function Sidebar() {
     const location = useLocation();
     const sidebarRef = useRef(null);
 
-    const isEjecucion     = location.pathname.startsWith("/ejecucion");
-    const isProyectos     = location.pathname.startsWith("/proyectos");
-    const isProgramacion  = location.pathname.startsWith("/programacion");
+    const isEjecucion = location.pathname.startsWith("/ejecucion");
+    const isProyectos = location.pathname.startsWith("/proyectos");
+    const isProgramacion = location.pathname.startsWith("/programacion");
     const isConfiguracion = location.pathname.startsWith("/configuracion");
-    const isReportes      = location.pathname.startsWith("/reportes");
+    const isReportes = location.pathname.startsWith("/reportes");
 
     const getInitialSidebarState = () => {
         try {
@@ -58,8 +58,8 @@ export default function Sidebar() {
     const [openReportes, setOpenReportes] = useState(initialState.openReportes);
     const [openUbicacion, setOpenUbicacion] = useState(initialState.openUbicacion);
 
-    const openEjecucion     = manualEjecucion !== null ? manualEjecucion : isEjecucion;
-    const openProyectos     = manualProyectos !== null ? manualProyectos : isProyectos;
+    const openEjecucion = manualEjecucion !== null ? manualEjecucion : isEjecucion;
+    const openProyectos = manualProyectos !== null ? manualProyectos : isProyectos;
     const openConfiguracion = manualConfiguracion !== null ? manualConfiguracion : isConfiguracion;
 
     const toggleEjecucion = () => setManualEjecucion((prev) => !(prev !== null ? prev : isEjecucion));
@@ -322,6 +322,12 @@ export default function Sidebar() {
                                     onClick={() => navigatePreservingSidebar("/configuracion/ubicacion/fincas")}
                                 >
                                     <Building size={14} />Fincas
+                                </div>
+                                <div
+                                    className={`submenu-item ${isActiveSub("/configuracion/ubicacion/fincas-masivas")}`}
+                                    onClick={() => navigatePreservingSidebar("/configuracion/ubicacion/fincas-masivas")}
+                                >
+                                    <Building size={14} />Carga masiva fincas
                                 </div>
                             </div>
                         )}

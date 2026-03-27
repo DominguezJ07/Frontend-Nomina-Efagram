@@ -26,3 +26,13 @@ export const deleteFinca = async (id) => {
   const response = await httpClient.delete(`/fincas/${id}`);
   return response.data;
 };
+
+export const getFincasBulkTemplateData = async () => {
+  const response = await httpClient.get('/fincas/bulk/template-data');
+  return response.data;
+};
+
+export const bulkUpsertFincas = async (rows) => {
+  const response = await httpClient.post('/fincas/bulk/upsert', { rows });
+  return response.data;
+};
