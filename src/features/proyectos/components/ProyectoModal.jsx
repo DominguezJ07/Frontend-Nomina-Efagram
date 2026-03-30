@@ -1274,7 +1274,7 @@ const ProyectoModal = ({
               }}
             >
               Cancelar
-            </button>
+            </button> 
 
             <button
               onClick={handleSubmit}
