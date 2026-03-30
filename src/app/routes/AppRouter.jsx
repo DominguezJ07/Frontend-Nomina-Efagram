@@ -14,17 +14,17 @@ import ClientesPage from '../../features/proyectos/pages/ClientesPage';
 import CatalogoActividadesPage from '../../features/proyectos/pages/CatalogoActividadesPage';
 import CatalogoPersonalPage from '../../features/proyectos/pages/CatalogoPersonalPage';
 
-// Configuración → Ubicación (antes Territorial)
+// Configuración → Ubicación
 import ZonasPage from '../../features/territorial/pages/ZonasPage';
 import NucleosPage from '../../features/territorial/pages/NucleosPage';
 import FincasPage from '../../features/territorial/pages/FincasPage';
+import FincasMasivasPage from '../../features/territorial/pages/FincasMasivasPage';
 
 import CatalogoIntervencionesPage from '../../features/proyectos/pages/CatalogoIntervencionesPage';
 import CatalogoProcesosPage from '../../features/proyectos/pages/CatalogoProcesosPage';
 import SubproyectosPage from '../../features/proyectos/pages/SubproyectosPage';
-import FincasMasivasPage from '../../features/territorial/pages/FincasMasivasPage';
 
-// Contratos (DENTRO DE PROYECTOS)
+// Contratos
 import ContratosPage from '../../features/contratos/pages/ContratosPage';
 
 // Programación
@@ -36,6 +36,9 @@ import ReportesPage from '../../features/reportes/pages/ReportesPage';
 // Cargos
 import CatalogoCargosPage from '../../features/proyectos/pages/CatalogoCargosPage';
 
+// Personal
+import CargaMasivaPersonalPage from '../../features/personal/pages/CargaMasivaPersonalPage';
+
 export default function AppRouter() {
   return (
     <Routes>
@@ -46,7 +49,7 @@ export default function AppRouter() {
       <Route path="/ejecucion/calendario" element={<PrivateRoute><CalendarioPage /></PrivateRoute>} />
       <Route path="/ejecucion/semanas-operativas" element={<PrivateRoute><SemanasOperativasPage /></PrivateRoute>} />
 
-      {/* ─── PROYECTOS CON SUBMENÚ ─── */}
+      {/* ─── PROYECTOS ─── */}
       <Route path="/proyectos" element={<PrivateRoute><ProyectosPage /></PrivateRoute>} />
       <Route path="/proyectos/subproyectos" element={<PrivateRoute><SubproyectosPage /></PrivateRoute>} />
       <Route path="/proyectos/contratos" element={<PrivateRoute><ContratosPage /></PrivateRoute>} />
@@ -57,17 +60,20 @@ export default function AppRouter() {
       {/* ─── PROGRAMACIÓN ─── */}
       <Route path="/programacion" element={<PrivateRoute><ProgramacionPage /></PrivateRoute>} />
 
+      {/* ─── PERSONAL ─── */}
+      <Route path="/personal/catalogo" element={<PrivateRoute><CatalogoPersonalPage /></PrivateRoute>} />
+      <Route path="/personal/carga-masiva" element={<PrivateRoute><CargaMasivaPersonalPage /></PrivateRoute>} />
+
       {/* ─── CONFIGURACIÓN ─── */}
       <Route path="/configuracion/catalogo-clientes" element={<PrivateRoute><ClientesPage /></PrivateRoute>} />
       <Route path="/configuracion/catalogo-actividades" element={<PrivateRoute><CatalogoActividadesPage /></PrivateRoute>} />
       <Route path="/configuracion/catalogo-intervenciones" element={<PrivateRoute><CatalogoIntervencionesPage /></PrivateRoute>} />
-      <Route path="/configuracion/catalogo-personal" element={<PrivateRoute><CatalogoPersonalPage /></PrivateRoute>} />
       <Route path="/configuracion/catalogo-procesos" element={<PrivateRoute><CatalogoProcesosPage /></PrivateRoute>} />
       <Route path="/configuracion/catalogo-cargos" element={<PrivateRoute><CatalogoCargosPage /></PrivateRoute>} />
       <Route path="/configuracion/ubicacion/zonas" element={<PrivateRoute><ZonasPage /></PrivateRoute>} />
       <Route path="/configuracion/ubicacion/nucleos" element={<PrivateRoute><NucleosPage /></PrivateRoute>} />
       <Route path="/configuracion/ubicacion/fincas" element={<PrivateRoute><FincasPage /></PrivateRoute>} />
-      <Route path="/configuracion/ubicacion/fincas-masivas" element={<PrivateRoute><FincasMasivasPage /></PrivateRoute>}/>
+      <Route path="/configuracion/ubicacion/fincas-masivas" element={<PrivateRoute><FincasMasivasPage /></PrivateRoute>} />
 
       {/* ─── REDIRECCIONES PARA COMPATIBILIDAD ─── */}
       <Route path="/clientes" element={<Navigate to="/configuracion/catalogo-clientes" replace />} />
@@ -76,6 +82,9 @@ export default function AppRouter() {
       <Route path="/territorial/nucleos" element={<Navigate to="/configuracion/ubicacion/nucleos" replace />} />
       <Route path="/territorial/fincas" element={<Navigate to="/configuracion/ubicacion/fincas" replace />} />
       <Route path="/contratos" element={<Navigate to="/proyectos/contratos" replace />} />
+
+      {/* compatibilidad de catálogo personal */}
+      <Route path="/configuracion/catalogo-personal" element={<Navigate to="/personal/catalogo" replace />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

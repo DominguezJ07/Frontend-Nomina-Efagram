@@ -1,11 +1,19 @@
-// ==========================================
-// COMPONENTE: TABLA PROGRAMACIÓN
-// ==========================================
-// Descripción: Tabla que muestra todas las programaciones
-// Ubicación: src/features/programacion/components/ProgramacionTable.jsx
-
-import { Edit2, Trash2, Eye, Zap } from 'lucide-react';
+import { Trash2, Eye, Zap } from 'lucide-react';
 import BarraProgreso from './BarraProgreso';
+
+const renderEstadoHoy = (prog) => {
+  const valor = prog?.registro_hoy_estado || prog?.estado_hoy || null;
+
+  if (valor === 'PENDIENTE') {
+    return <span className="badge badge-warning">Hoy pendiente</span>;
+  }
+
+  if (valor === 'COMPLETADO') {
+    return <span className="badge badge-success">Hoy OK</span>;
+  }
+
+  return <span className="badge badge-secondary">Sin dato</span>;
+};
 
 export default function ProgramacionTable({
   programaciones,
@@ -44,39 +52,31 @@ export default function ProgramacionTable({
             <th>Actividad</th>
             <th>Proyectado</th>
             <th>Ejecutado</th>
+            <th>Registro de hoy</th>
             <th>Fechas</th>
             <th>Semana</th>
             <th>Acciones</th>
           </tr>
         </thead>
+
         <tbody>
           {programaciones.map((prog) => (
             <tr key={prog._id} className={`estado-${prog.estado?.toLowerCase()}`}>
-              {/* Contrato */}
               <td className="font-bold">
                 <span className="badge badge-info">{prog.contrato?.codigo || 'N/A'}</span>
               </td>
 
-              {/* Finca */}
               <td>{prog.finca?.nombre || 'N/A'}</td>
 
-              {/* Lote */}
               <td>{prog.lote?.nombre || 'N/A'}</td>
 
-              {/* Actividad */}
               <td>{prog.actividad?.nombre || 'N/A'}</td>
 
-              {/* Proyectado */}
               <td className="proyectado">
-                <div className="cantidad">
-                  {prog.cantidad_proyectada}
-                </div>
-                <div className="valor">
-                  ${prog.valor_proyectado?.toLocaleString() || '0'}
-                </div>
+                <div className="cantidad">{prog.cantidad_proyectada}</div>
+                <div className="valor">${prog.valor_proyectado?.toLocaleString() || '0'}</div>
               </td>
 
-              {/* Ejecutado (Barra de progreso + Porcentaje) */}
               <td className="ejecutado">
                 <BarraProgreso
                   porcentaje={prog.porcentaje_cumplimiento}
@@ -85,7 +85,8 @@ export default function ProgramacionTable({
                 />
               </td>
 
-              {/* Fechas */}
+              <td>{renderEstadoHoy(prog)}</td>
+
               <td className="fechas">
                 <div className="fecha-inicio">
                   {new Date(prog.fecha_inicial).toLocaleDateString('es-CO')}
@@ -95,14 +96,12 @@ export default function ProgramacionTable({
                 </div>
               </td>
 
-              {/* Semana */}
               <td>
                 <span className={`badge badge-semana semana-${prog.semana}`}>
                   Semana {prog.semana}
                 </span>
               </td>
 
-              {/* Acciones */}
               <td className="acciones">
                 <button
                   className="btn btn-sm btn-primary"
@@ -112,6 +111,7 @@ export default function ProgramacionTable({
                   <Eye size={16} />
                   Detalles
                 </button>
+
                 <button
                   className="btn btn-sm btn-danger"
                   onClick={() => onEliminar(prog._id)}

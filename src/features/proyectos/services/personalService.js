@@ -11,3 +11,9 @@ export const updatePersona = (id, data) =>
 
 export const deletePersona = (id) =>
   httpClient.post(`/personas/${id}/retirar`, { motivo: 'Retiro desde catálogo' });
+
+export const getPersonasBulkTemplateData = () =>
+  httpClient.get('/personas/bulk/template-data');
+
+export const bulkUpsertPersonas = (rows) =>
+  httpClient.post('/personas/bulk/upsert', { rows });

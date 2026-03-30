@@ -22,63 +22,6 @@ import {
   Lock,
 } from 'lucide-react';
 
-const BarraProgreso = ({ asignado, total, label }) => {
-  const pct = total > 0 ? Math.min(100, Math.round((asignado / total) * 100)) : 0;
-  const color = pct >= 100 ? '#dc2626' : pct >= 75 ? '#e67e22' : '#1f8f57';
-
-  return (
-    <div style={{ width: '100%' }}>
-      {label && (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            fontSize: 11,
-            color: '#64748b',
-            marginBottom: 3,
-          }}
-        >
-          <span>{label}</span>
-          <span style={{ fontWeight: 700, color }}>{pct}%</span>
-        </div>
-      )}
-      <div
-        style={{
-          height: 7,
-          background: '#e2e8f0',
-          borderRadius: 999,
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          style={{
-            height: '100%',
-            width: `${pct}%`,
-            background: color,
-            borderRadius: 999,
-            transition: 'width 0.3s',
-          }}
-        />
-      </div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          fontSize: 11,
-          color: '#94a3b8',
-          marginTop: 2,
-        }}
-      >
-        <span>Asignado: {asignado}</span>
-        <span>Total: {total}</span>
-        <span style={{ color: pct >= 100 ? '#dc2626' : '#1f8f57' }}>
-          {pct >= 100 ? '🔒 Cerrada' : `Disponible: ${(total - asignado).toFixed(2)}`}
-        </span>
-      </div>
-    </div>
-  );
-};
-
 const ErrorBanner = ({ errors }) => {
   if (!errors || errors.length === 0) return null;
 
@@ -901,7 +844,6 @@ const SubproyectoModal = ({ isOpen, onClose, onSuccess, subproyecto = null, proy
                                   alignItems: 'flex-start',
                                   justifyContent: 'space-between',
                                   gap: 10,
-                                  marginBottom: 8,
                                 }}
                               >
                                 <div>
@@ -982,11 +924,6 @@ const SubproyectoModal = ({ isOpen, onClose, onSuccess, subproyecto = null, proy
                                   </span>
                                 )}
                               </div>
-
-                              <BarraProgreso
-                                asignado={a.cantidad_asignada}
-                                total={a.cantidad_total}
-                              />
                             </div>
                           );
                         })}

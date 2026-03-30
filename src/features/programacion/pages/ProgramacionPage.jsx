@@ -34,10 +34,19 @@ import '../../../assets/styles/Programacionpage.css';
 
 // ── Normalizar respuesta ──────────────────────────────────────────────
 const normalizeProgramaciones = (response) => {
-  if (Array.isArray(response?.data?.programaciones)) return response.data.programaciones;
-  if (Array.isArray(response?.data)) return response.data;
-  if (Array.isArray(response)) return response;
-  return [];
+  const lista =
+    Array.isArray(response?.data?.programaciones) ? response.data.programaciones :
+      Array.isArray(response?.data) ? response.data :
+        Array.isArray(response) ? response :
+          [];
+
+  return lista.map((p) => ({
+    ...p,
+    registro_hoy_estado:
+      p?.registro_hoy_estado ||
+      p?.estado_hoy ||
+      null,
+  }));
 };
 
 // ── Stat card ─────────────────────────────────────────────────────────

@@ -129,7 +129,7 @@ const ProyectoModal = ({ isOpen, onClose, onSuccess, proyecto = null, modo = "cr
         return `${d}/${m}/${y}`;
       };
       setDisplayFechas({
-        fecha_inicio:       toDisplay(proyecto.fecha_inicio),
+        fecha_inicio: toDisplay(proyecto.fecha_inicio),
         fecha_fin_estimada: toDisplay(proyecto.fecha_fin_estimada),
       });
 
@@ -504,11 +504,11 @@ const ProyectoModal = ({ isOpen, onClose, onSuccess, proyecto = null, modo = "cr
                   onChange={e => {
                     const raw = e.target.value.replace(/[^0-9]/g, '').slice(0, 8);
                     let display = raw;
-                    if (raw.length > 4) display = raw.slice(0,2) + '/' + raw.slice(2,4) + '/' + raw.slice(4);
-                    else if (raw.length > 2) display = raw.slice(0,2) + '/' + raw.slice(2);
+                    if (raw.length > 4) display = raw.slice(0, 2) + '/' + raw.slice(2, 4) + '/' + raw.slice(4);
+                    else if (raw.length > 2) display = raw.slice(0, 2) + '/' + raw.slice(2);
                     setDisplayFechas(p => ({ ...p, fecha_inicio: display }));
                     if (raw.length === 8) {
-                      const d = raw.slice(0,2), m = raw.slice(2,4), y = raw.slice(4,8);
+                      const d = raw.slice(0, 2), m = raw.slice(2, 4), y = raw.slice(4, 8);
                       setForm(p => ({ ...p, fecha_inicio: `${y}-${m}-${d}` }));
                     } else {
                       setForm(p => ({ ...p, fecha_inicio: '' }));
@@ -527,11 +527,11 @@ const ProyectoModal = ({ isOpen, onClose, onSuccess, proyecto = null, modo = "cr
                   onChange={e => {
                     const raw = e.target.value.replace(/[^0-9]/g, '').slice(0, 8);
                     let display = raw;
-                    if (raw.length > 4) display = raw.slice(0,2) + '/' + raw.slice(2,4) + '/' + raw.slice(4);
-                    else if (raw.length > 2) display = raw.slice(0,2) + '/' + raw.slice(2);
+                    if (raw.length > 4) display = raw.slice(0, 2) + '/' + raw.slice(2, 4) + '/' + raw.slice(4);
+                    else if (raw.length > 2) display = raw.slice(0, 2) + '/' + raw.slice(2);
                     setDisplayFechas(p => ({ ...p, fecha_fin_estimada: display }));
                     if (raw.length === 8) {
-                      const d = raw.slice(0,2), m = raw.slice(2,4), y = raw.slice(4,8);
+                      const d = raw.slice(0, 2), m = raw.slice(2, 4), y = raw.slice(4, 8);
                       setForm(p => ({ ...p, fecha_fin_estimada: `${y}-${m}-${d}` }));
                     } else {
                       setForm(p => ({ ...p, fecha_fin_estimada: '' }));
@@ -555,14 +555,15 @@ const ProyectoModal = ({ isOpen, onClose, onSuccess, proyecto = null, modo = "cr
 
             <ActividadesIntervencion intervenciones={intervenciones} setIntervenciones={setIntervenciones} />
 
+            
             <div className="form-group">
               <label>Descripción</label>
-              <textarea name="descripcion" value={form.descripcion} onChange={handleChange} placeholder="Descripción opcional..." />
-            </div>
-
-            <div className="form-group">
-              <label>Avance: {form.avance}%</label>
-              <input type="range" name="avance" min="0" max="100" value={form.avance} onChange={handleChange} />
+              <textarea
+                name="descripcion"
+                value={form.descripcion}
+                onChange={handleChange}
+                placeholder="Descripción opcional..."
+              />
             </div>
 
           </div>

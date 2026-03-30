@@ -4,7 +4,7 @@ import {
     LayoutDashboard, BarChart3, Play, Folder,
     Users, CheckSquare, ChevronDown, Layers, Building,
     AlertTriangle, Calendar, Clock,
-    Settings, MapPin, Wrench, GitBranch, FileText, Activity, Briefcase
+    Settings, MapPin, Wrench, GitBranch, FileText, Activity, Briefcase, Upload
 } from "lucide-react";
 import "./sidebar.css";
 
@@ -19,6 +19,7 @@ export default function Sidebar() {
     const isEjecucion = location.pathname.startsWith("/ejecucion");
     const isProyectos = location.pathname.startsWith("/proyectos");
     const isProgramacion = location.pathname.startsWith("/programacion");
+    const isPersonal = location.pathname.startsWith("/personal");
     const isConfiguracion = location.pathname.startsWith("/configuracion");
     const isReportes = location.pathname.startsWith("/reportes");
 
@@ -30,6 +31,7 @@ export default function Sidebar() {
                 return {
                     manualEjecucion: parsed.manualEjecucion ?? null,
                     manualProyectos: parsed.manualProyectos ?? null,
+                    manualPersonal: parsed.manualPersonal ?? null,
                     manualConfiguracion: parsed.manualConfiguracion ?? null,
                     openReportes: parsed.openReportes ?? false,
                     openUbicacion:
@@ -44,6 +46,7 @@ export default function Sidebar() {
         return {
             manualEjecucion: null,
             manualProyectos: null,
+            manualPersonal: null,
             manualConfiguracion: null,
             openReportes: false,
             openUbicacion: location.pathname.startsWith("/configuracion/ubicacion"),
@@ -54,16 +57,19 @@ export default function Sidebar() {
 
     const [manualEjecucion, setManualEjecucion] = useState(initialState.manualEjecucion);
     const [manualProyectos, setManualProyectos] = useState(initialState.manualProyectos);
+    const [manualPersonal, setManualPersonal] = useState(initialState.manualPersonal);
     const [manualConfiguracion, setManualConfiguracion] = useState(initialState.manualConfiguracion);
     const [openReportes, setOpenReportes] = useState(initialState.openReportes);
     const [openUbicacion, setOpenUbicacion] = useState(initialState.openUbicacion);
 
     const openEjecucion = manualEjecucion !== null ? manualEjecucion : isEjecucion;
     const openProyectos = manualProyectos !== null ? manualProyectos : isProyectos;
+    const openPersonal = manualPersonal !== null ? manualPersonal : isPersonal;
     const openConfiguracion = manualConfiguracion !== null ? manualConfiguracion : isConfiguracion;
 
     const toggleEjecucion = () => setManualEjecucion((prev) => !(prev !== null ? prev : isEjecucion));
     const toggleProyectos = () => setManualProyectos((prev) => !(prev !== null ? prev : isProyectos));
+    const togglePersonal = () => setManualPersonal((prev) => !(prev !== null ? prev : isPersonal));
     const toggleConfiguracion = () => setManualConfiguracion((prev) => !(prev !== null ? prev : isConfiguracion));
 
     const isActive = (path) => location.pathname === path;
@@ -87,6 +93,7 @@ export default function Sidebar() {
                 JSON.stringify({
                     manualEjecucion,
                     manualProyectos,
+                    manualPersonal,
                     manualConfiguracion,
                     openReportes,
                     openUbicacion,
@@ -95,7 +102,7 @@ export default function Sidebar() {
         } catch (error) {
             console.error("No se pudo guardar el estado del sidebar:", error);
         }
-    }, [manualEjecucion, manualProyectos, manualConfiguracion, openReportes, openUbicacion]);
+    }, [manualEjecucion, manualProyectos, manualPersonal, manualConfiguracion, openReportes, openUbicacion]);
 
     useLayoutEffect(() => {
         const el = sidebarRef.current;
@@ -239,6 +246,30 @@ export default function Sidebar() {
                     </div>
                 )}
 
+                <div
+                    className={`menu-item ${isPersonal ? "active" : ""}`}
+                    onClick={togglePersonal}
+                >
+                    <Users size={18} /><span>Personal</span>
+                    <ChevronDown size={16} className={`arrow ${openPersonal ? "rotate" : ""}`} />
+                </div>
+                {openPersonal && (
+                    <div className="submenu">
+                        <div
+                            className={`submenu-item ${isActiveSub("/personal/catalogo")}`}
+                            onClick={() => navigatePreservingSidebar("/personal/catalogo")}
+                        >
+                            <Users size={16} />Catálogo personal
+                        </div>
+                        <div
+                            className={`submenu-item ${isActiveSub("/personal/carga-masiva")}`}
+                            onClick={() => navigatePreservingSidebar("/personal/carga-masiva")}
+                        >
+                            <Upload size={16} />Carga masiva
+                        </div>
+                    </div>
+                )}
+
                 <div className="menu-title">Sistema</div>
 
                 <div
@@ -278,13 +309,6 @@ export default function Sidebar() {
                             onClick={() => navigatePreservingSidebar("/configuracion/catalogo-procesos")}
                         >
                             <Layers size={16} />Catálogo Procesos
-                        </div>
-
-                        <div
-                            className={`submenu-item ${isActiveSub("/configuracion/catalogo-personal")}`}
-                            onClick={() => navigatePreservingSidebar("/configuracion/catalogo-personal")}
-                        >
-                            <Users size={16} />Catálogo Personal
                         </div>
 
                         <div
