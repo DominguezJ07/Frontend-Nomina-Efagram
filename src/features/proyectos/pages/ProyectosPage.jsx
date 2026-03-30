@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getProyectos, deleteProyecto } from "../services/proyectosService";
+import { getActividadesProyecto } from "../services/subproyectosService";
 import "../../../assets/styles/proyectos.css";
 import ProyectoModal from "../components/ProyectoModal";
 import DashboardLayout from "../../../app/layouts/DashboardLayout";
@@ -55,6 +56,8 @@ const ProyectosPage = () => {
     proyecto: null,
   });
 
+  const [actividadesMap, setActividadesMap] = useState({});
+
   const abrirCrear = () =>
     setModalState({ open: true, modo: "crear", proyecto: null });
 
@@ -75,12 +78,27 @@ const ProyectosPage = () => {
 
       const response = await getProyectos();
       const data = response?.data?.data ?? response?.data ?? [];
+      const proyectosData = Array.isArray(data) ? data : [];
 
-      setProyectos(Array.isArray(data) ? data : []);
+      setProyectos(proyectosData);
+
+      const map = {};
+      await Promise.all(
+        proyectosData.map(async (p) => {
+          try {
+            const res = await getActividadesProyecto({ proyecto: p._id });
+            map[p._id] = res?.data?.data ?? [];
+          } catch {
+            map[p._id] = [];
+          }
+        })
+      );
+      setActividadesMap(map);
     } catch (err) {
       console.error("Error cargando proyectos:", err);
       setError("No se pudieron cargar los proyectos.");
       setProyectos([]);
+      setActividadesMap({});
     } finally {
       setLoading(false);
     }
@@ -144,7 +162,6 @@ const ProyectosPage = () => {
   return (
     <DashboardLayout>
       <div className="proyectos-container">
-        {/* ── STATS ── */}
         <div className="proy-stats-row">
           <div className="proy-stat-card">
             <div className="proy-stat-icon proy-stat-icon--green">
@@ -177,7 +194,6 @@ const ProyectosPage = () => {
           </div>
         </div>
 
-        {/* ── TOOLBAR ── */}
         <div className="proy-toolbar">
           <div className="proy-search-wrapper">
             <Search
@@ -203,28 +219,45 @@ const ProyectosPage = () => {
           </button>
         </div>
 
-        {/* ── ESTADOS ── */}
         {loading && <p className="proy-msg">Cargando proyectos...</p>}
         {error && <p className="proy-msg proy-msg--error">{error}</p>}
         {!loading && proyectosFiltrados.length === 0 && (
           <p className="proy-msg">No hay proyectos registrados.</p>
         )}
 
-        {/* ── GRID DE CARDS ── */}
         <div className="proy-cards-grid">
           {proyectosFiltrados.map((proyecto) => {
             const estado = proyecto.estado?.toUpperCase();
             const avance = proyecto.avance ?? 0;
 
-            const intervenciones = Object.entries(
-              proyecto.actividades_por_intervencion ?? {}
-            ).filter(([, arr]) => Array.isArray(arr) && arr.length > 0);
+            const actsProyecto = actividadesMap[proyecto._id] ?? [];
+
+            const intervByObj = actsProyecto.reduce((acc, a) => {
+              const id = a.intervencion?._id ?? a.intervencion ?? "sin_tipo";
+              const nombre = a.intervencion?.nombre ?? id;
+
+              if (!acc[id]) acc[id] = { nombre, acts: [], monto: 0 };
+
+              acc[id].acts.push(a);
+              acc[id].monto +=
+                (a.precio_unitario || 0) * (a.cantidad_total || 0);
+
+              return acc;
+            }, {});
+
+            const intervenciones = Object.values(intervByObj);
+
+            const intervOld =
+              actsProyecto.length === 0
+                ? Object.entries(
+                    proyecto.actividades_por_intervencion ?? {}
+                  ).filter(([, arr]) => Array.isArray(arr) && arr.length > 0)
+                : [];
 
             const presupuesto = proyecto.presupuesto_por_intervencion ?? {};
 
             return (
               <div key={proyecto._id} className="proy-card">
-                {/* Cabecera */}
                 <div className="proy-card-header">
                   <div className="proy-card-icon-wrap">
                     <Folder size={20} color="#1f8f57" />
@@ -246,7 +279,6 @@ const ProyectosPage = () => {
                   </span>
                 </div>
 
-                {/* Barra de avance */}
                 <div className="proy-avance-row">
                   <span className="proy-avance-label">Avance</span>
                   <span className="proy-avance-pct">{avance}%</span>
@@ -258,10 +290,17 @@ const ProyectosPage = () => {
                   />
                 </div>
 
-                {/* Chips de intervenciones */}
-                {intervenciones.length > 0 && (
+                {(intervenciones.length > 0 || intervOld.length > 0) && (
                   <div className="proy-intervenciones">
-                    {intervenciones.map(([tipo, acts]) => {
+                    {intervenciones.map((iv) => (
+                      <span key={iv.nombre} className="proy-interv-chip">
+                        🌿 {iv.nombre}&nbsp;
+                        <strong>{iv.acts.length}</strong>
+                        {iv.monto > 0 && <>&nbsp;{fmtMonto(iv.monto)}</>}
+                      </span>
+                    ))}
+
+                    {intervOld.map(([tipo, acts]) => {
                       const monto = presupuesto[tipo]?.monto_presupuestado;
 
                       return (
@@ -275,14 +314,12 @@ const ProyectosPage = () => {
                   </div>
                 )}
 
-                {/* Valor total */}
                 {proyecto.valor_total != null && (
                   <p className="proy-valor-total">
                     Valor total: <strong>{fmtMonto(proyecto.valor_total)}</strong>
                   </p>
                 )}
 
-                {/* Cuadrillas y lotes */}
                 <div className="proy-meta-row">
                   {proyecto.cuadrillas != null && (
                     <span
@@ -316,7 +353,6 @@ const ProyectosPage = () => {
                   ) : null}
                 </div>
 
-                {/* Footer */}
                 <div className="proy-card-footer">
                   <span className="proy-fechas">
                     {fmtFecha(proyecto.fecha_inicio)} —{" "}
@@ -372,7 +408,6 @@ const ProyectosPage = () => {
           })}
         </div>
 
-        {/* ── MODAL ÚNICO ── */}
         <ProyectoModal
           isOpen={modalState.open}
           modo={modalState.modo}

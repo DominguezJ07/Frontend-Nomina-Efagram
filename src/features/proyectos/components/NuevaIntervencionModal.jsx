@@ -62,7 +62,7 @@ export default function NuevaIntervencionModal({
     if (locales.length > 0) { setErrors(locales); return; }
 
     const payload = {
-      codigo:      codigo.trim(),
+      codigo:      String(codigo).trim().toUpperCase(),
       nombre:      nombre.trim(),
       proceso,
       activo:      Boolean(activo),
@@ -120,7 +120,7 @@ export default function NuevaIntervencionModal({
             <span>Código *</span>
             <input
               value={codigo}
-              onChange={(e) => { setCodigo(e.target.value); setErrors([]); }}
+              onChange={(e) => { setCodigo(e.target.value.toUpperCase()); setErrors([]); }}
               placeholder="Ej: INT-001"
               autoFocus
             />

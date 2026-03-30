@@ -7,19 +7,22 @@ import {
   deleteActividadProyecto,
 } from "../services/subproyectosService";
 import { getProyectos } from "../services/proyectosService";
+import { getIntervenciones } from "../services/intervencionesService";
 import { Plus, Pencil, Trash2, Lock, Package } from "lucide-react";
 
 // ─── Helpers ──────────────────────────────────────────────
 const fmtMoney = (n) =>
   n > 0 ? "$ " + Number(n).toLocaleString("es-CO") : "—";
 
-const INTERVENCION_COLOR = {
-  mantenimiento:   { bg: "#f0faf4", border: "#1f8f57", color: "#1f8f57", light: "#e8f5ee" },
-  no_programadas:  { bg: "#eff6ff", border: "#3b82f6", color: "#1d4ed8", light: "#dbeafe" },
-  establecimiento: { bg: "#fff5f5", border: "#ef4444", color: "#dc2626", light: "#fee2e2" },
-};
-const TIPO_EMOJI  = { mantenimiento: "🔧", no_programadas: "⚡", establecimiento: "🌱" };
-const TIPO_LABEL  = { mantenimiento: "Mantenimiento", no_programadas: "No programadas", establecimiento: "Establecimiento" };
+const PALETA = [
+  { bg: "#f0faf4", border: "#1f8f57", color: "#1f8f57", light: "#e8f5ee", emoji: "🌿" },
+  { bg: "#eff6ff", border: "#3b82f6", color: "#1d4ed8", light: "#dbeafe", emoji: "💧" },
+  { bg: "#fff5f5", border: "#ef4444", color: "#dc2626", light: "#fee2e2", emoji: "🌱" },
+  { bg: "#fff7ed", border: "#f97316", color: "#ea580c", light: "#ffedd5", emoji: "🔶" },
+  { bg: "#f5f3ff", border: "#8b5cf6", color: "#7c3aed", light: "#ede9fe", emoji: "🔷" },
+  { bg: "#fdf4ff", border: "#d946ef", color: "#c026d3", light: "#fae8ff", emoji: "🌸" },
+];
+const getColor = (idx) => PALETA[idx % PALETA.length];
 
 const BarraProgreso = ({ asignado, total }) => {
   const pct   = total > 0 ? Math.min(100, Math.round((asignado / total) * 100)) : 0;
@@ -50,14 +53,17 @@ const ActividadesProyectoPage = () => {
   const [filtro,         setFiltro]         = useState("todas"); // todas | ABIERTA | CERRADA
   const [filtroTipo,     setFiltroTipo]     = useState("");
   const [modal,          setModal]          = useState({ open: false, act: null });
+  const [intervencionesLista, setIntervencionesLista] = useState([]);
 
   // ── Cargar proyectos ──
   useEffect(() => {
-    getProyectos()
-      .then((res) => {
-        const data = res?.data?.data ?? [];
+    Promise.all([getProyectos(), getIntervenciones()])
+      .then(([pRes, iRes]) => {
+        const data = pRes?.data?.data ?? [];
         setProyectos(data);
         if (proyectoIdParam) setProyectoObj(data.find((p) => p._id === proyectoIdParam) ?? null);
+        const lista = (iRes?.data?.data ?? iRes?.data ?? []).filter((i) => i.activo !== false);
+        setIntervencionesLista(lista);
       })
       .catch(console.error);
   }, [proyectoIdParam]);
@@ -105,9 +111,13 @@ const ActividadesProyectoPage = () => {
   };
 
   // ── Filtros ──
+  // Resolve intervencion id whether populated object or raw id string
+  const getIntervId = (a) =>
+    a?.intervencion?._id ?? a?.intervencion ?? "";
+
   const actividadesFiltradas = actividades.filter((a) => {
     if (filtro !== "todas" && a.estado !== filtro) return false;
-    if (filtroTipo && a.intervencion !== filtroTipo) return false;
+    if (filtroTipo && getIntervId(a) !== filtroTipo) return false;
     return true;
   });
 
@@ -120,8 +130,9 @@ const ActividadesProyectoPage = () => {
 
   // Agrupar por intervención para mostrar secciones
   const porIntervencion = actividadesFiltradas.reduce((acc, a) => {
-    if (!acc[a.intervencion]) acc[a.intervencion] = [];
-    acc[a.intervencion].push(a);
+    const key = getIntervId(a);
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(a);
     return acc;
   }, {});
 
@@ -214,22 +225,26 @@ const ActividadesProyectoPage = () => {
               </button>
             ))}
             <span style={{ margin: "0 4px", color: "#e2e8f0" }}>|</span>
-            {["", "mantenimiento", "no_programadas", "establecimiento"].map((t) => (
-              <button
-                key={t || "todas-tipo"}
-                onClick={() => setFiltroTipo(t)}
-                style={{
-                  padding: "5px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
-                  background: filtroTipo === t ? (INTERVENCION_COLOR[t]?.bg ?? "#1f8f57") : "#f8fafc",
-                  color: filtroTipo === t ? (INTERVENCION_COLOR[t]?.color ?? "#fff") : "#475569",
-                  border: filtroTipo === t
-                    ? `1.5px solid ${INTERVENCION_COLOR[t]?.border ?? "#1f8f57"}`
-                    : "1px solid #e2e8f0",
-                }}
-              >
-                {t ? `${TIPO_EMOJI[t]} ${TIPO_LABEL[t]}` : "Todos los tipos"}
-              </button>
-            ))}
+            {/* Todos los tipos */}
+            <button
+              onClick={() => setFiltroTipo("")}
+              style={{ padding: "5px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", background: filtroTipo === "" ? "#1f8f57" : "#f8fafc", color: filtroTipo === "" ? "#fff" : "#475569", border: filtroTipo === "" ? "none" : "1px solid #e2e8f0" }}
+            >
+              Todos los tipos
+            </button>
+            {intervencionesLista.map((interv, idx) => {
+              const c = getColor(idx);
+              const sel = filtroTipo === interv._id;
+              return (
+                <button
+                  key={interv._id}
+                  onClick={() => setFiltroTipo(interv._id)}
+                  style={{ padding: "5px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", background: sel ? c.bg : "#f8fafc", color: sel ? c.color : "#475569", border: sel ? `1.5px solid ${c.border}` : "1px solid #e2e8f0" }}
+                >
+                  {c.emoji} {interv.nombre}
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -259,18 +274,22 @@ const ActividadesProyectoPage = () => {
         )}
 
         {/* ── Actividades agrupadas por intervención ── */}
-        {proyectoSel && !loading && Object.entries(porIntervencion).map(([tipo, acts]) => {
-          const col = INTERVENCION_COLOR[tipo] ?? {};
+        {proyectoSel && !loading && Object.entries(porIntervencion).map(([intervId, acts]) => {
+          const intervIdx = intervencionesLista.findIndex((iv) => iv._id === intervId);
+          const col = intervIdx >= 0 ? getColor(intervIdx) : getColor(0);
+          const interv = intervencionesLista[intervIdx];
+          // Fallback: use populated name from first activity
+          const intervNombre = interv?.nombre ?? acts[0]?.intervencion?.nombre ?? intervId;
           const totalTipo = acts.reduce((s, a) => s + (a.precio_unitario || 0) * (a.cantidad_total || 0), 0);
 
           return (
-            <div key={tipo}>
+            <div key={intervId}>
               {/* Cabecera de sección */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 18 }}>{TIPO_EMOJI[tipo]}</span>
+                  <span style={{ fontSize: 18 }}>{col.emoji}</span>
                   <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: col.color }}>
-                    {TIPO_LABEL[tipo]}
+                    {intervNombre}
                   </h3>
                   <span style={{ background: col.bg, border: `1px solid ${col.border}`, color: col.color, fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999 }}>
                     {acts.length} actividad{acts.length !== 1 ? "es" : ""}

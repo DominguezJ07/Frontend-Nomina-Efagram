@@ -149,7 +149,7 @@
   border: 1px solid var(--c-border);
   border-radius: var(--c-radius);
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto;
   box-shadow: var(--c-shadow);
   flex: 1;
   min-height: 0;

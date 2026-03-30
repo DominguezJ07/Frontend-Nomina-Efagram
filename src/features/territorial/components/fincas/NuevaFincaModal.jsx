@@ -113,7 +113,9 @@ export default function NuevaFincaModal({
 
         <div className="modal-body">
           <label className="field">
-            <span>Código <span style={{ color: '#9ca3af', fontWeight: 400 }}>(automático)</span></span>
+            <span>
+              Código <span style={{ color: '#9ca3af', fontWeight: 400 }}>(automático)</span>
+            </span>
             <input
               value={codigo}
               readOnly

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Eye, Pencil, Plus, Search, Activity, X } from 'lucide-react';
+import { Eye, Pencil, Trash2, Plus, Search, Activity, X } from 'lucide-react';
 import NuevaIntervencionModal from './NuevaIntervencionModal';
 
 function IntervencionDetalleModal({ isOpen, intervencion, onClose }) {
@@ -64,7 +64,8 @@ export default function IntervencionesTable({
   search = '',
   setSearch,
   onAdd,
-  onUpdate
+  onUpdate,
+  onDelete,
 }) {
   const [openCreate,          setOpenCreate]          = useState(false);
   const [editIntervencion,    setEditIntervencion]    = useState(null);
@@ -157,6 +158,18 @@ export default function IntervencionesTable({
                           onClick={() => setEditIntervencion(i)}
                         >
                           <Pencil size={16} />
+                        </button>
+                        <button
+                          className="icon-btn icon-btn--danger"
+                          type="button"
+                          title="Eliminar"
+                          onClick={() => {
+                            if (window.confirm(`¿Eliminar la intervención "${i?.nombre}"?`)) {
+                              onDelete?.(id);
+                            }
+                          }}
+                        >
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </td>

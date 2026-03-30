@@ -1,5 +1,9 @@
 import httpClient from '../../../core/api/httpClient';
 
+export const getPersonas = () =>
+  httpClient.get('/personas');
+
+// alias para compatibilidad con otros componentes
 export const getPersonal = () =>
   httpClient.get('/personas');
 

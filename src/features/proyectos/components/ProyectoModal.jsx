@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createProyecto, updateProyecto } from "../services/proyectosService";
-import { getPersonas } from "../../../personal/services/personalService";
+import { getPersonas } from "../services/personalService";
 import { getZonas } from "../../territorial/services/zonas.service";
 import ActividadesIntervencion from "./ActividadesIntervencion";
 import {
@@ -65,7 +65,6 @@ const InfoRow = ({ icon, label, value }) => {
   );
 };
 
-// Banner de errores reutilizable
 const ErrorBanner = ({ errors }) => {
   if (!errors || errors.length === 0) return null;
   return (
@@ -192,13 +191,16 @@ const ProyectoModal = ({ isOpen, onClose, onSuccess, proyecto = null, modo = "cr
   };
 
   const buildPayload = () => {
-    const actividadesPorIntervencion = { mantenimiento: [], no_programadas: [], establecimiento: [] };
+    const actividadesPorIntervencion = {};
     let clienteId = "";
 
     intervenciones.forEach((bloque) => {
       if (!clienteId && bloque.cliente_id) clienteId = bloque.cliente_id;
+      const key = bloque.intervencion_id ?? bloque.tipo ?? "sin_tipo";
+      if (!actividadesPorIntervencion[key]) actividadesPorIntervencion[key] = [];
+
       bloque.actividades.forEach((act) => {
-        actividadesPorIntervencion[bloque.tipo]?.push({
+        actividadesPorIntervencion[key].push({
           nombre: act.nombre,
           precio_unitario: Number(act.precio_unitario) || 0,
           cantidad: Number(act.cantidad) || 0,
@@ -216,14 +218,12 @@ const ProyectoModal = ({ isOpen, onClose, onSuccess, proyecto = null, modo = "cr
       nombre: form.nombre.trim(),
       zona: form.zona || undefined,
       cliente: clienteId,
-      actividades_por_intervencion: actividadesPorIntervencion,
     };
   };
 
   const handleSubmit = async () => {
     setFormErrors([]);
 
-    // Validaciones frontend con mensajes detallados
     const errores = [];
     if (!form.codigo.trim()) errores.push("El código del proyecto es obligatorio (ej: PRY-001).");
     if (!form.nombre.trim()) errores.push("El nombre del proyecto es obligatorio.");
@@ -259,26 +259,25 @@ const ProyectoModal = ({ isOpen, onClose, onSuccess, proyecto = null, modo = "cr
       }
 
       if (proyectoId) {
+        console.log("BLOQUES:", JSON.stringify(intervenciones, null, 2));
         for (const bloque of intervenciones) {
           for (const act of bloque.actividades) {
             if (!act.catalogo_id) continue;
             try {
               await import("../services/subproyectosService").then(({ createActividadProyecto }) =>
                 createActividadProyecto({
-                  proyecto: proyectoId,
-                  actividad: act.catalogo_id,
-                  intervencion: bloque.tipo,
-                  cliente: bloque.cliente_id || undefined,
-                  supervisor: bloque.supervisor_id || undefined,
+                  proyecto:        proyectoId,
+                  actividad:       act.catalogo_id,
+                  intervencion:    bloque.intervencion_id ?? bloque.tipo,
+                  cliente:         bloque.cliente_id   || undefined,
+                  supervisor:      bloque.supervisor_id || undefined,
                   precio_unitario: Number(act.precio_unitario) || 0,
-                  cantidad_total: Number(act.cantidad) || 1,
-                  unidad: act.unidad || "UNIDAD",
+                  cantidad_total:  Number(act.cantidad) || 1,
+                  unidad:          act.unidad || "UNIDAD",
                 })
               );
             } catch (e) {
-              if (!e?.response?.data?.message?.includes("duplicate")) {
-                console.warn("No se pudo sincronizar actividad:", act.nombre, e?.response?.data?.message);
-              }
+              console.error("ERROR actividad:", act.nombre, JSON.stringify(e?.response?.data));
             }
           }
         }
@@ -287,7 +286,6 @@ const ProyectoModal = ({ isOpen, onClose, onSuccess, proyecto = null, modo = "cr
       onSuccess?.();
       onClose?.();
     } catch (err) {
-      // Errores del backend — mostrar detallado
       const backendErrors = err?.response?.data?.errors;
       if (Array.isArray(backendErrors) && backendErrors.length > 0) {
         const MENSAJES = {
@@ -458,7 +456,6 @@ const ProyectoModal = ({ isOpen, onClose, onSuccess, proyecto = null, modo = "cr
         <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
           <div style={{ paddingRight: "8px" }}>
 
-            {/* Banner de errores */}
             <ErrorBanner errors={formErrors} />
 
             <div className="form-group">
@@ -569,7 +566,6 @@ const ProyectoModal = ({ isOpen, onClose, onSuccess, proyecto = null, modo = "cr
           </div>
         </div>
 
-        {/* FOOTER */}
         {/* FOOTER */}
         <div style={{ flexShrink: 0, marginTop: 20 }}>
           <ErrorBanner errors={formErrors} />
