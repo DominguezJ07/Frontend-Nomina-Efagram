@@ -4,6 +4,10 @@ export const getActividades = (params) => {
   return httpClient.get("/actividades", { params });
 };
 
+export const getActividadesByIntervencion = (intervencionId) => {
+  return httpClient.get(`/actividades/intervencion/${intervencionId}`);
+};
+
 export const createActividad = (data) => {
   return httpClient.post("/actividades", data);
 };
